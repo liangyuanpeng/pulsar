@@ -80,11 +80,11 @@ topicCompactionFrequencySec: 1800
 processContainerFactory:
   logDirectory:
   # change the jar location only when you put the java instance jar in a different location
-  javaInstanceJarLocation:
+  javaInstanceJarLocation: instances/java-instance.jar
   # change the python instance location only when you put the python instance jar in a different location
-  pythonInstanceLocation:
+  pythonInstanceLocation: instances/python-instance/python_instance_main.py
   # change the extra dependencies location:
-  extraFunctionDependenciesDir:
+  extraFunctionDependenciesDir: instances/deps
 #kubernetesContainerFactory:
 #  # uri to kubernetes cluster, leave it to empty and it will use the kubernetes settings in function worker
 #  k8Uri:
