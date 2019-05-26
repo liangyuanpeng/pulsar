@@ -32,6 +32,7 @@ import org.apache.pulsar.io.core.annotations.FieldDoc;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 @Data
@@ -55,6 +56,27 @@ public class RabbitMQSourceConfig extends RabbitMQAbstractConfig implements Seri
         defaultValue = "false",
         help = "Set true if the settings should be applied to the entire channel rather than each consumer")
     private boolean prefetchGlobal = false;
+
+    @FieldDoc(
+            required = false,
+            defaultValue = "false",
+            help = "Set true if we are declaring a durable queue (the queue will survive a server restart)")
+    private boolean durable = false;
+    @FieldDoc(
+            required = false,
+            defaultValue = "false",
+            help = "Set true if we are declaring an exclusive queue (restricted to this connection)")
+    private boolean exclusive = false;
+    @FieldDoc(
+            required = false,
+            defaultValue = "false",
+            help = "Set true if we are declaring an autodelete queue (server will delete it when no longer in use)")
+    private boolean autoDelete = false;
+    @FieldDoc(
+            required = false,
+            defaultValue = "false",
+            help = "other properties (construction arguments) for the queue")
+    private Map<String,Object> arguments = new HashMap<>();
 
     public static RabbitMQSourceConfig load(String yamlFile) throws IOException {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());

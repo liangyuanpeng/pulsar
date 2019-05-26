@@ -68,7 +68,8 @@ public class RabbitMQSource extends PushSource<byte[]> {
                 rabbitMQConnection.getPort()
         );
         rabbitMQChannel = rabbitMQConnection.createChannel();
-        rabbitMQChannel.queueDeclare(rabbitMQSourceConfig.getQueueName(), false, false, false, null);
+
+        rabbitMQChannel.queueDeclare(rabbitMQSourceConfig.getQueueName(), rabbitMQSourceConfig.isDurable(), rabbitMQSourceConfig.isExclusive(), rabbitMQSourceConfig.isAutoDelete(), rabbitMQSourceConfig.getArguments());
         logger.info("Setting channel.basicQos({}, {}).",
                 rabbitMQSourceConfig.getPrefetchCount(),
                 rabbitMQSourceConfig.isPrefetchGlobal()
