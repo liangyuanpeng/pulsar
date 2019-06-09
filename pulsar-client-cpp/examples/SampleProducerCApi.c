@@ -24,13 +24,15 @@
 
 int main() {
     pulsar_client_configuration_t *conf = pulsar_client_configuration_create();
-    pulsar_client_t *client = pulsar_client_create("pulsar://localhost:6650", conf);
+    pulsar_client_t *client = pulsar_client_create("pulsar+ssl://useast1.gcp.kafkaesque.io:6651", conf);
 
     pulsar_producer_configuration_t* producer_conf = pulsar_producer_configuration_create();
     pulsar_producer_configuration_set_batching_enabled(producer_conf, 1);
     pulsar_producer_t *producer;
 
+    printf("begin create producer");
     pulsar_result err = pulsar_client_create_producer(client, "my-topic", producer_conf, &producer);
+    printf("end create producer");
     if (err != pulsar_result_Ok) {
         printf("Failed to create producer: %s\n", pulsar_result_str(err));
         return 1;

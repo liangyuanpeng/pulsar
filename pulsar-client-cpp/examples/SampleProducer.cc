@@ -27,10 +27,12 @@ DECLARE_LOG_OBJECT()
 using namespace pulsar;
 
 int main() {
-    Client client("pulsar://localhost:6650");
+    Client client("pulsar://useast1.gcp.kafkaesque.io:6651");
 
     Producer producer;
-    Result result = client.createProducer("persistent://prop/r1/ns1/my-topic", producer);
+    // Result result = client.createProducer("persistent://prop/r1/ns1/my-topic", producer);
+    //persistent://
+    Result result = client.createProducer("lan/worldwide/my-topic", producer);
     if (result != ResultOk) {
         LOG_ERROR("Error creating producer: " << result);
         return -1;

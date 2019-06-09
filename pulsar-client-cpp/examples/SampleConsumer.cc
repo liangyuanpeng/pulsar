@@ -28,10 +28,11 @@ using namespace pulsar;
 
 int main() {
 
-    Client client("pulsar://localhost:6650");
+    Client client("pulsar+ssl://useast1.gcp.kafkaesque.io:6651");
 
     Consumer consumer;
-    Result result = client.subscribe("persistent://prop/r1/ns1/my-topic", "consumer-1", consumer);
+    //persistent://
+    Result result = client.subscribe("lan/worldwide/my-topic", "consumer-1", consumer);
     if (result != ResultOk) {
         LOG_ERROR("Failed to subscribe: " << result);
         return -1;
