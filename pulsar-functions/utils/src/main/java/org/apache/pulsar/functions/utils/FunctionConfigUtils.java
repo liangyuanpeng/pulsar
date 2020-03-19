@@ -382,6 +382,7 @@ public class FunctionConfigUtils {
     private static void doJavaChecks(FunctionConfig functionConfig, ClassLoader clsLoader) {
 
         try {
+            log.info("================load.class:{}",functionConfig.getClassName());
             Class functionClass = clsLoader.loadClass(functionConfig.getClassName());
 
             if (!org.apache.pulsar.functions.api.Function.class.isAssignableFrom(functionClass)
@@ -392,6 +393,7 @@ public class FunctionConfigUtils {
                                 functionClass.getName()));
             }
         } catch (ClassNotFoundException | NoClassDefFoundError e) {
+//            e.printStackTrace();
             throw new IllegalArgumentException(
                     String.format("Function class %s must be in class path", functionConfig.getClassName()), e);
         }
