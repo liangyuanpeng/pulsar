@@ -27,7 +27,7 @@ workerPort: 6740
 workerPortTls: 6741
 
 # Configuration Store connection string
-configurationStoreServers: 192.168.1.16:2181
+configurationStoreServers: 192.168.1.11:2181
 # ZooKeeper session timeout in milliseconds
 zooKeeperSessionTimeoutMillis: 30000
 # ZooKeeper operation timeout in seconds
@@ -49,8 +49,8 @@ downloadDirectory: download/pulsar_functions
 # Configure the pulsar client used by function metadata management
 #
 # points 
-pulsarServiceUrl: pulsar://192.168.1.16:6650
-pulsarWebServiceUrl: http://192.168.1.16:8080
+pulsarServiceUrl: pulsar://192.168.1.11:6650
+pulsarWebServiceUrl: http://192.168.1.11:8080
 # the authentication plugin to be used by the pulsar client used in worker service
 # clientAuthenticationPlugin:
 # the authentication parameter to be used by the pulsar client used in worker service
