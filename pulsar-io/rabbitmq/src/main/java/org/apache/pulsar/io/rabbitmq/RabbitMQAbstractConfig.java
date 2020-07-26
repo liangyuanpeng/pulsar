@@ -26,6 +26,7 @@ import lombok.experimental.Accessors;
 import org.apache.pulsar.io.core.annotations.FieldDoc;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * Configuration object for all RabbitMQ components.
@@ -109,6 +110,14 @@ public class RabbitMQAbstractConfig implements Serializable {
         defaultValue = "60",
         help = "The requested heartbeat timeout in seconds")
     private int requestedHeartbeat = 60;
+
+    private boolean durable = false;
+
+    private boolean exclusive = false;
+
+    private boolean autoDelete = false;
+
+    private Map arguments;
 
     public void validate() {
         Preconditions.checkNotNull(host, "host property not set.");

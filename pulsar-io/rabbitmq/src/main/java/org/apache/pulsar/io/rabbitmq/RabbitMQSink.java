@@ -29,6 +29,8 @@ import org.apache.pulsar.io.core.Sink;
 import org.apache.pulsar.io.core.SinkContext;
 import org.apache.pulsar.io.core.annotations.Connector;
 import org.apache.pulsar.io.core.annotations.IOType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
@@ -45,6 +47,8 @@ import java.util.Map;
 )
 @Slf4j
 public class RabbitMQSink implements Sink<byte[]> {
+
+    private static Logger logger = LoggerFactory.getLogger(RabbitMQSink.class);
 
     private Connection rabbitMQConnection;
     private Channel rabbitMQChannel;
@@ -63,6 +67,9 @@ public class RabbitMQSink implements Sink<byte[]> {
             rabbitMQConnection.getAddress().getCanonicalHostName(),
             rabbitMQConnection.getPort()
         );
+
+        logger.info("***************rabbitMQSourceConfig:{}",rabbitMQSinkConfig);
+
 
         exchangeName = rabbitMQSinkConfig.getExchangeName();
         defaultRoutingKey = rabbitMQSinkConfig.getRoutingKey();
