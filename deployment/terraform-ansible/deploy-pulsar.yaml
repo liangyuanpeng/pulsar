@@ -135,8 +135,8 @@
         dest: "/opt/pulsar/conf/broker.conf"
     - name: Set up function worker
       template:
-        src: "../templates/functions_worker.yml"
-        dest: "/opt/pulsar/conf/functions_worker.yml"
+        src: "../templates/functions_worker.yml_k8s"
+        dest: "/opt/pulsar/conf/functions_worker.yml_k8s"
     - template:
         src: "../templates/pulsar.broker.service"
         dest: "/etc/systemd/system/pulsar.broker.service"

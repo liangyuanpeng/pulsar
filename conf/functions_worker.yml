@@ -23,8 +23,8 @@
 
 workerId: standalone
 workerHostname: 16local
-workerPort: 6750
-workerPortTls: 6751
+workerPort: 6740
+workerPortTls: 6741
 
 # Configuration Store connection string
 configurationStoreServers: 192.168.1.11:2181
@@ -69,7 +69,7 @@ pulsarWebServiceUrl: http://192.168.1.11:8080
 # pulsar topics used for function metadata management
 
 pulsarFunctionsNamespace: public/functions
-pulsarFunctionsCluster: lan
+pulsarFunctionsCluster: lanren
 functionMetadataTopicName: metadata
 clusterCoordinationTopicName: coordinate
 # Number of threads to use for HTTP requests processing. Default is set to 8
@@ -97,14 +97,14 @@ topicCompactionFrequencySec: 1800
 
 functionRuntimeFactoryClassName: org.apache.pulsar.functions.runtime.process.ProcessRuntimeFactory
 functionRuntimeFactoryConfigs:
-    # location of log files for functions
-    logDirectory: /tmp
-    # change the jar location only when you put the java instance jar in a different location
-    javaInstanceJarLocation:
-    # change the python instance location only when you put the python instance jar in a different location
-    pythonInstanceLocation:
-    # change the extra dependencies location:
-    extraFunctionDependenciesDir:
+  # location of log files for functions
+  logDirectory: /tmp
+  # change the jar location only when you put the java instance jar in a different location
+  javaInstanceJarLocation: #/disk/localrepo/pulsar/instances/java-instance.jar #./instances/java-instance.jar
+  # change the python instance location only when you put the python instance jar in a different location
+  pythonInstanceLocation: ./instances/instances/python-instalce
+  # change the extra dependencies location:
+  extraFunctionDependenciesDir:
 
 #### Thread Runtime ####
 # Pulsar function instances are run as threads
@@ -119,37 +119,37 @@ functionRuntimeFactoryConfigs:
 
 #functionRuntimeFactoryClassName: org.apache.pulsar.functions.runtime.kubernetes.KubernetesRuntimeFactory
 #functionRuntimeFactoryConfigs:
-#  # uri to kubernetes cluster, leave it to empty and it will use the kubernetes settings in function worker
+##  # uri to kubernetes cluster, leave it to empty and it will use the kubernetes settings in function worker
 #  k8Uri:
-#  # the kubernetes namespace to run the function instances. it is `default`, if this setting is left to be empty
+##  # the kubernetes namespace to run the function instances. it is `default`, if this setting is left to be empty
 #  jobNamespace:
-#  # the docker image to run function instance. by default it is `apachepulsar/pulsar`
+##  # the docker image to run function instance. by default it is `apachepulsar/pulsar`
 #  pulsarDockerImageName:
-#  # the root directory of pulsar home directory in `pulsarDockerImageName`. by default it is `/pulsar`.
-#  # if you are using your own built image in `pulsarDockerImageName`, you need to set this setting accordingly
+##  # the root directory of pulsar home directory in `pulsarDockerImageName`. by default it is `/pulsar`.
+##  # if you are using your own built image in `pulsarDockerImageName`, you need to set this setting accordingly
 #  pulsarRootDir:
-#  # this setting only takes effects if `k8Uri` is set to null. if your function worker is running as a k8 pod,
-#  # setting this to true is let function worker to submit functions to the same k8s cluster as function worker
-#  # is running. setting this to false if your function worker is not running as a k8 pod.
+##  # this setting only takes effects if `k8Uri` is set to null. if your function worker is running as a k8 pod,
+##  # setting this to true is let function worker to submit functions to the same k8s cluster as function worker
+##  # is running. setting this to false if your function worker is not running as a k8 pod.
 #  submittingInsidePod: false
-#  # setting the pulsar service url that pulsar function should use to connect to pulsar
-#  # if it is not set, it will use the pulsar service url configured in worker service
-#  pulsarServiceUrl:
-#  # setting the pulsar admin url that pulsar function should use to connect to pulsar
-#  # if it is not set, it will use the pulsar admin url configured in worker service
-#  pulsarAdminUrl:
-#  # the custom labels that function worker uses to select the nodes for pods
+##  # setting the pulsar service url that pulsar function should use to connect to pulsar
+##  # if it is not set, it will use the pulsar service url configured in worker service
+#  pulsarServiceUrl: http://192.168.1.16:6650
+##  # setting the pulsar admin url that pulsar function should use to connect to pulsar
+##  # if it is not set, it will use the pulsar admin url configured in worker service
+#  pulsarAdminUrl: http://192.168.1.16:8080
+##  # the custom labels that function worker uses to select the nodes for pods
 #  customLabels:
-#  # the directory for dropping extra function dependencies
-#  # if it is not an absolute path, it is relative to `pulsarRootDir`
+##  # the directory for dropping extra function dependencies
+##  # if it is not an absolute path, it is relative to `pulsarRootDir`
 #  extraFunctionDependenciesDir:
-#  # Additional memory padding added on top of the memory requested by the function per on a per instance basis
+##  # Additional memory padding added on top of the memory requested by the function per on a per instance basis
 #  percentMemoryPadding: 10
-#  # The ratio cpu request and cpu limit to be set for a function/source/sink.
-#  # The formula for cpu request is cpuRequest = userRequestCpu / cpuOverCommitRatio
+##  # The ratio cpu request and cpu limit to be set for a function/source/sink.
+##  # The formula for cpu request is cpuRequest = userRequestCpu / cpuOverCommitRatio
 #  cpuOverCommitRatio: 1.0
-#  # The ratio memory request and memory limit to be set for a function/source/sink.
-#  # The formula for memory request is memoryRequest = userRequestMemory / memoryOverCommitRatio
+##  # The ratio memory request and memory limit to be set for a function/source/sink.
+##  # The formula for memory request is memoryRequest = userRequestMemory / memoryOverCommitRatio
 #  memoryOverCommitRatio: 1.0
 
 ## A set of the minimum amount of resources functions must request.
