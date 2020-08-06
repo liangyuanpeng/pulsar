@@ -56,6 +56,12 @@ public class RabbitMQSinkConfig extends RabbitMQAbstractConfig implements Serial
         help = "The exchange type to publish the messages on")
     private String exchangeType = "topic";
 
+    @FieldDoc(
+            required = false,
+            defaultValue = "true",
+            help = "The requested heartbeat timeout in seconds")
+    private boolean durable = false;
+
     public static RabbitMQSinkConfig load(String yamlFile) throws IOException {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         return mapper.readValue(new File(yamlFile), RabbitMQSinkConfig.class);

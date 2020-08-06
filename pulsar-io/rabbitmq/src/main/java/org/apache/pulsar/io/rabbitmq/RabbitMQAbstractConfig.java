@@ -111,12 +111,20 @@ public class RabbitMQAbstractConfig implements Serializable {
         help = "The requested heartbeat timeout in seconds")
     private int requestedHeartbeat = 60;
 
-    private boolean durable = false;
-
+    @FieldDoc(
+            required = false,
+            defaultValue = "false",
+            help = "The requested heartbeat timeout in seconds")
     private boolean exclusive = false;
-
+    @FieldDoc(
+            required = false,
+            defaultValue = "false",
+            help = "The requested heartbeat timeout in seconds")
     private boolean autoDelete = false;
-
+    @FieldDoc(
+            required = false,
+            defaultValue = "null",
+            help = "The requested heartbeat timeout in seconds")
     private Map arguments;
 
     public void validate() {

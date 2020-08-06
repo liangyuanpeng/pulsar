@@ -78,11 +78,11 @@ public class RabbitMQSink implements Sink<byte[]> {
         rabbitMQChannel = rabbitMQConnection.createChannel();
         String queueName = rabbitMQSinkConfig.getQueueName();
         if (StringUtils.isNotEmpty(queueName)) {
-            rabbitMQChannel.exchangeDeclare(exchangeName, BuiltinExchangeType.DIRECT, true);
-            rabbitMQChannel.queueDeclare(rabbitMQSinkConfig.getQueueName(), true, false, false, null);
+            rabbitMQChannel.exchangeDeclare(exchangeName, BuiltinExchangeType.DIRECT, rabbitMQSinkConfig.isDurable());
+            rabbitMQChannel.queueDeclare(rabbitMQSinkConfig.getQueueName(),  rabbitMQSinkConfig.isDurable(), rabbitMQSinkConfig.isExclusive(), rabbitMQSinkConfig.isAutoDelete(), rabbitMQSinkConfig.getArguments());
             rabbitMQChannel.queueBind(rabbitMQSinkConfig.getQueueName(), exchangeName, defaultRoutingKey);
         } else {
-            rabbitMQChannel.exchangeDeclare(exchangeName, exchangeType, true);
+            rabbitMQChannel.exchangeDeclare(exchangeName, exchangeType,  rabbitMQSinkConfig.isDurable());
         }
     }
 

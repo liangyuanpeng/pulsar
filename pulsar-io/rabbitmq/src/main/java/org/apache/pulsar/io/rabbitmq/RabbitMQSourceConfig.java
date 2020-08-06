@@ -56,7 +56,11 @@ public class RabbitMQSourceConfig extends RabbitMQAbstractConfig implements Seri
         help = "Set true if the settings should be applied to the entire channel rather than each consumer")
     private boolean prefetchGlobal = false;
 
-
+    @FieldDoc(
+            required = false,
+            defaultValue = "false",
+            help = "The requested heartbeat timeout in seconds")
+    private boolean durable = false;
 
 
     public static RabbitMQSourceConfig load(String yamlFile) throws IOException {
