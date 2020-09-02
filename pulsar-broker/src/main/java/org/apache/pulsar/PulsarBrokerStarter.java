@@ -347,6 +347,7 @@ public class PulsarBrokerStarter {
 
         try {
             starter.start();
+            //-Dorg.apache.logging.log4j.simplelog.StatusLogger.level=DEBUG
         } catch (Exception e) {
             log.error("Failed to start pulsar service.", e);
             Runtime.getRuntime().halt(1);
