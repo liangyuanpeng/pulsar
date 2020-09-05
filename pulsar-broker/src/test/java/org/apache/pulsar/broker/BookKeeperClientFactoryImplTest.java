@@ -156,7 +156,7 @@ public class BookKeeperClientFactoryImplTest {
     public void testSetDiskWeightBasedPlacementEnabled() {
         BookKeeperClientFactoryImpl factory = new BookKeeperClientFactoryImpl();
         ServiceConfiguration conf = new ServiceConfiguration();
-        conf.setZookeeperServers("localhost:2181");
+        conf.setZookeeperServers("192.168.1.112:2181");
         assertFalse(factory.createBkClientConfiguration(conf).getDiskWeightBasedPlacementEnabled());
         conf.setBookkeeperDiskWeightBasedPlacementEnabled(true);
         assertTrue(factory.createBkClientConfiguration(conf).getDiskWeightBasedPlacementEnabled());
@@ -176,11 +176,11 @@ public class BookKeeperClientFactoryImplTest {
     public void testSetMetadataServiceUri() {
         BookKeeperClientFactoryImpl factory = new BookKeeperClientFactoryImpl();
         ServiceConfiguration conf = new ServiceConfiguration();
-        conf.setZookeeperServers("localhost:2181");
+        conf.setZookeeperServers("192.168.1.112:2181");
         try {
-            String defaultUri = "zk+null://localhost:2181/ledgers";
+            String defaultUri = "zk+null://192.168.1.112:2181/ledgers";
             assertEquals(factory.createBkClientConfiguration(conf).getMetadataServiceUri(), defaultUri);
-            String expectedUri = "zk+hierarchical://localhost:2181/chroot/ledgers";
+            String expectedUri = "zk+hierarchical://192.168.1.112::2181/chroot/ledgers";
             conf.setBookkeeperMetadataServiceUri(expectedUri);
             assertEquals(factory.createBkClientConfiguration(conf).getMetadataServiceUri(), expectedUri);
         } catch (ConfigurationException e) {

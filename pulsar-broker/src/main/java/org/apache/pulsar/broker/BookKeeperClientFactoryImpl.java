@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -18,37 +18,36 @@
  */
 package org.apache.pulsar.broker;
 
-import static org.apache.bookkeeper.client.RackawareEnsemblePlacementPolicyImpl.REPP_DNS_RESOLVER_CLASS;
-import static org.apache.bookkeeper.client.RegionAwareEnsemblePlacementPolicy.REPP_ENABLE_DURABILITY_ENFORCEMENT_IN_REPLACE;
-import static org.apache.bookkeeper.client.RegionAwareEnsemblePlacementPolicy.REPP_ENABLE_VALIDATION;
-import static org.apache.bookkeeper.client.RegionAwareEnsemblePlacementPolicy.REPP_MINIMUM_REGIONS_FOR_DURABILITY;
-import static org.apache.bookkeeper.client.RegionAwareEnsemblePlacementPolicy.REPP_REGIONS_TO_WRITE;
-
-import java.io.IOException;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.bookkeeper.client.BKException;
-import org.apache.bookkeeper.client.BookKeeper;
-import org.apache.bookkeeper.client.EnsemblePlacementPolicy;
-import org.apache.bookkeeper.client.RackawareEnsemblePlacementPolicy;
-import org.apache.bookkeeper.client.RegionAwareEnsemblePlacementPolicy;
+import io.swagger.util.Json;
+import org.apache.bookkeeper.client.*;
 import org.apache.bookkeeper.conf.ClientConfiguration;
 import org.apache.bookkeeper.stats.NullStatsLogger;
 import org.apache.bookkeeper.stats.StatsLogger;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.pulsar.common.allocator.PulsarByteBufAllocator;
 import org.apache.pulsar.common.protocol.Commands;
 import org.apache.pulsar.zookeeper.ZkBookieRackAffinityMapping;
 import org.apache.pulsar.zookeeper.ZkIsolatedBookieEnsemblePlacementPolicy;
 import org.apache.pulsar.zookeeper.ZooKeeperCache;
 import org.apache.zookeeper.ZooKeeper;
-import org.apache.pulsar.common.allocator.PulsarByteBufAllocator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.apache.bookkeeper.client.RackawareEnsemblePlacementPolicyImpl.REPP_DNS_RESOLVER_CLASS;
+import static org.apache.bookkeeper.client.RegionAwareEnsemblePlacementPolicy.*;
 
 @SuppressWarnings("deprecation")
 public class BookKeeperClientFactoryImpl implements BookKeeperClientFactory {
+
+    private static final Logger LOG = LoggerFactory.getLogger(BookKeeperClientFactoryImpl.class);
+
 
     private final AtomicReference<ZooKeeperCache> rackawarePolicyZkCache = new AtomicReference<>();
     private final AtomicReference<ZooKeeperCache> clientIsolationZkCache = new AtomicReference<>();
@@ -65,7 +64,7 @@ public class BookKeeperClientFactoryImpl implements BookKeeperClientFactory {
     public BookKeeper create(ServiceConfiguration conf, ZooKeeper zkClient,
                              Optional<Class<? extends EnsemblePlacementPolicy>> ensemblePlacementPolicyClass,
                              Map<String, Object> properties, StatsLogger statsLogger) throws IOException {
-        ClientConfiguration bkConf = createBkClientConfiguration(conf);
+        ClientConfigurationLan bkConf = createBkClientConfiguration(conf);
         if (properties != null) {
             properties.forEach((key, value) -> bkConf.setProperty(key, value));
         }
@@ -74,26 +73,45 @@ public class BookKeeperClientFactoryImpl implements BookKeeperClientFactory {
         } else {
             setDefaultEnsemblePlacementPolicy(rackawarePolicyZkCache, clientIsolationZkCache, bkConf, conf, zkClient);
         }
+        ObjectOutputStream bkconfObj = null;
+        ObjectOutputStream bklogObj = null;
         try {
+            LOG.info("create.bookeeper:{}|{}", Json.pretty(bkConf), Json.pretty(statsLogger));
+
+            bkconfObj = new ObjectOutputStream(new FileOutputStream("d://bkconf.txt"));
+            bkconfObj.writeObject(bkConf);
+
+//            bklogObj = new ObjectOutputStream(new FileOutputStream("d://bklog.txt"));
+//            bklogObj.writeObject(statsLogger);
+
             return BookKeeper.forConfig(bkConf)
                     .allocator(PulsarByteBufAllocator.DEFAULT)
                     .statsLogger(statsLogger)
                     .build();
         } catch (InterruptedException | BKException e) {
+            LOG.error("create.bookeeper.failed:{}|{}", bkConf, statsLogger);
+            e.printStackTrace();
             throw new IOException(e);
+        } finally {
+            if (bkconfObj != null) {
+                bkconfObj.close();
+            }
+            if (bklogObj != null) {
+                bklogObj.close();
+            }
         }
     }
 
     @VisibleForTesting
-    ClientConfiguration createBkClientConfiguration(ServiceConfiguration conf) {
-        ClientConfiguration bkConf = new ClientConfiguration();
+    ClientConfigurationLan createBkClientConfiguration(ServiceConfiguration conf) {
+        ClientConfigurationLan bkConf = new ClientConfigurationLan();
         if (conf.getBookkeeperClientAuthenticationPlugin() != null
                 && conf.getBookkeeperClientAuthenticationPlugin().trim().length() > 0) {
             bkConf.setClientAuthProviderFactoryClass(conf.getBookkeeperClientAuthenticationPlugin());
             bkConf.setProperty(conf.getBookkeeperClientAuthenticationParametersName(),
                     conf.getBookkeeperClientAuthenticationParameters());
         }
-        
+
         if (conf.isBookkeeperTLSClientAuthentication()) {
             bkConf.setTLSClientAuthentication(true);
             bkConf.setTLSCertificatePath(conf.getBookkeeperTLSCertificateFilePath());
@@ -141,39 +159,39 @@ public class BookKeeperClientFactoryImpl implements BookKeeperClientFactory {
     }
 
     public static void setDefaultEnsemblePlacementPolicy(
-        AtomicReference<ZooKeeperCache> rackawarePolicyZkCache,
-        AtomicReference<ZooKeeperCache> clientIsolationZkCache,
-        ClientConfiguration bkConf,
-        ServiceConfiguration conf,
-        ZooKeeper zkClient
+            AtomicReference<ZooKeeperCache> rackawarePolicyZkCache,
+            AtomicReference<ZooKeeperCache> clientIsolationZkCache,
+            ClientConfiguration bkConf,
+            ServiceConfiguration conf,
+            ZooKeeper zkClient
     ) {
         if (conf.isBookkeeperClientRackawarePolicyEnabled() || conf.isBookkeeperClientRegionawarePolicyEnabled()) {
             if (conf.isBookkeeperClientRegionawarePolicyEnabled()) {
                 bkConf.setEnsemblePlacementPolicy(RegionAwareEnsemblePlacementPolicy.class);
 
                 bkConf.setProperty(
-                    REPP_ENABLE_VALIDATION,
-                    conf.getProperties().getProperty(REPP_ENABLE_VALIDATION, "true")
+                        REPP_ENABLE_VALIDATION,
+                        conf.getProperties().getProperty(REPP_ENABLE_VALIDATION, "true")
                 );
                 bkConf.setProperty(
-                    REPP_REGIONS_TO_WRITE,
-                    conf.getProperties().getProperty(REPP_REGIONS_TO_WRITE, null)
+                        REPP_REGIONS_TO_WRITE,
+                        conf.getProperties().getProperty(REPP_REGIONS_TO_WRITE, null)
                 );
                 bkConf.setProperty(
-                    REPP_MINIMUM_REGIONS_FOR_DURABILITY,
-                    conf.getProperties().getProperty(REPP_MINIMUM_REGIONS_FOR_DURABILITY, "2")
+                        REPP_MINIMUM_REGIONS_FOR_DURABILITY,
+                        conf.getProperties().getProperty(REPP_MINIMUM_REGIONS_FOR_DURABILITY, "2")
                 );
                 bkConf.setProperty(
-                    REPP_ENABLE_DURABILITY_ENFORCEMENT_IN_REPLACE,
-                    conf.getProperties().getProperty(REPP_ENABLE_DURABILITY_ENFORCEMENT_IN_REPLACE, "true")
+                        REPP_ENABLE_DURABILITY_ENFORCEMENT_IN_REPLACE,
+                        conf.getProperties().getProperty(REPP_ENABLE_DURABILITY_ENFORCEMENT_IN_REPLACE, "true")
                 );
             } else {
                 bkConf.setEnsemblePlacementPolicy(RackawareEnsemblePlacementPolicy.class);
             }
             bkConf.setProperty(REPP_DNS_RESOLVER_CLASS,
-                conf.getProperties().getProperty(
-                    REPP_DNS_RESOLVER_CLASS,
-                    ZkBookieRackAffinityMapping.class.getName()));
+                    conf.getProperties().getProperty(
+                            REPP_DNS_RESOLVER_CLASS,
+                            ZkBookieRackAffinityMapping.class.getName()));
 
             ZooKeeperCache zkc = new ZooKeeperCache("bookies-racks", zkClient,
                     conf.getZooKeeperOperationTimeoutSeconds()) {
@@ -205,7 +223,7 @@ public class BookKeeperClientFactoryImpl implements BookKeeperClientFactory {
     }
 
     private void setEnsemblePlacementPolicy(ClientConfiguration bkConf, ServiceConfiguration conf, ZooKeeper zkClient,
-            Class<? extends EnsemblePlacementPolicy> policyClass) {
+                                            Class<? extends EnsemblePlacementPolicy> policyClass) {
         bkConf.setEnsemblePlacementPolicy(policyClass);
         if (bkConf.getProperty(ZooKeeperCache.ZK_CACHE_INSTANCE) == null) {
             ZooKeeperCache zkc = new ZooKeeperCache("bookies-rackaware", zkClient,
@@ -227,6 +245,22 @@ public class BookKeeperClientFactoryImpl implements BookKeeperClientFactory {
         }
         if (this.zkCache.get() != null) {
             this.zkCache.get().stop();
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        ObjectInputStream bkConfOis = null;
+        try {
+            bkConfOis = new ObjectInputStream(new FileInputStream("d://bkconf.txt"));
+//        ObjectInputStream bkLogOis = new ObjectInputStream(new FileInputStream("d://bklog.txt"));
+            ClientConfigurationLan clientConfiguration = (ClientConfigurationLan) bkConfOis.readObject();
+            LOG.info("clientConfiguration:{}", Json.pretty(clientConfiguration));
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (bkConfOis != null) {
+                bkConfOis.close();
+            }
         }
     }
 }
