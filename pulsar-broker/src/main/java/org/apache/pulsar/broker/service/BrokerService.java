@@ -355,6 +355,11 @@ public class BrokerService implements Closeable, ZooKeeperCacheListener<Policies
     }
 
     public void start() throws Exception {
+
+//        开发环境配置
+//        VM参数-Xms1536m -Xmx1536m -Dlog4j.configurationFile=conf/log4j3.yaml
+//        程序参数-c conf/broker.conf
+
         this.producerNameGenerator = new DistributedIdGenerator(pulsar.getZkClient(), producerNameGeneratorPath,
                 pulsar.getConfiguration().getClusterName());
 
