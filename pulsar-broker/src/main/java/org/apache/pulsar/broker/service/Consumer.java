@@ -115,6 +115,7 @@ public class Consumer {
                     Map<String, String> metadata, boolean readCompacted, InitialPosition subscriptionInitialPosition,
                     PulsarApi.KeySharedMeta keySharedMeta) throws BrokerServiceException {
 
+        log.info("***new Consumer");
         this.subscription = subscription;
         this.subType = subType;
         this.topicName = topicName;

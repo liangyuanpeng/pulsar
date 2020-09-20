@@ -21,16 +21,17 @@
 
 # DEFAULT: console appender only
 # Define some default values that can be overridden by system properties
-pulsar.root.logger=INFO,CONSOLE
-pulsar.log.dir=logs
-pulsar.log.file=pulsar.log
+pulsar.root.logger=DEBUG,CONSOLE
+pulsar.log.dir=logs2
+pulsar.log.file=pulsar22.log
 
-log4j.rootLogger=${pulsar.root.logger}
+#log4j.rootLogger=${pulsar.root.logger}
 
 log4j.logger.org.apache.pulsar.proxy=INFO
 
 # Example with rolling log file
-#log4j.rootLogger=DEBUG, CONSOLE, ROLLINGFILE
+log4j.rootLogger=DEBUG, CONSOLE
+#, ROLLINGFILE
 
 # Example with rolling log file and tracing
 #log4j.rootLogger=TRACE, CONSOLE, ROLLINGFILE, TRACEFILE

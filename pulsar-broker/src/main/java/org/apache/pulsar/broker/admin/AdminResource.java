@@ -42,7 +42,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.bookkeeper.common.util.JsonUtil;
 import org.apache.bookkeeper.util.ZkUtils;
+import org.apache.logging.log4j.core.util.JsonUtils;
 import org.apache.pulsar.broker.PulsarService;
 import org.apache.pulsar.broker.ServiceConfiguration;
 import org.apache.pulsar.broker.cache.LocalZooKeeperCacheService;
@@ -396,9 +398,11 @@ public abstract class AdminResource extends PulsarWebResource {
         try {
             final String namespace = namespaceName.toString();
             final String policyPath = AdminResource.path(POLICIES, namespace);
+
             Policies policies = policiesCache().get(policyPath)
                     .orElseThrow(() -> new RestException(Status.NOT_FOUND, "Namespace does not exist"));
             // fetch bundles from LocalZK-policies
+            log.info("policiesCache:{}", JsonUtil.toJson(policies));
             NamespaceBundles bundles = pulsar().getNamespaceService().getNamespaceBundleFactory()
                     .getBundles(namespaceName);
             BundlesData bundleData = NamespaceBundleFactory.getBundlesData(bundles);

@@ -127,7 +127,7 @@ public class ConfigurationCacheService {
 
     private void createFailureDomainRoot(ZooKeeper zk, String path) {
         try {
-            final String clusterZnodePath = Paths.get(path).getParent().toString();
+            final String clusterZnodePath = Paths.get(path).getParent().toString().replace("\\","/");
             if (zk.exists(clusterZnodePath, false) != null && zk.exists(path, false) == null) {
                 try {
                     byte[] data = "".getBytes();

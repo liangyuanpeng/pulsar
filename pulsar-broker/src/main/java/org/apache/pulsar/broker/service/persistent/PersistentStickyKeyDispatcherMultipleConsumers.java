@@ -47,6 +47,7 @@ public class PersistentStickyKeyDispatcherMultipleConsumers extends PersistentDi
     PersistentStickyKeyDispatcherMultipleConsumers(PersistentTopic topic, ManagedCursor cursor,
            Subscription subscription, StickyKeyConsumerSelector selector) {
         super(topic, cursor, subscription);
+        log.info("***PersistentStickyKeyDispatcherMultipleConsumers");
         this.selector = selector;
     }
 

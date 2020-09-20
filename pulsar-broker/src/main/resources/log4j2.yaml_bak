@@ -26,14 +26,12 @@ Configuration:
 
   Properties:
     Property:
-      - name: log.level.console
-        value: debug
       - name: "pulsar.log.dir"
         value: "logs"
       - name: "pulsar.log.file"
-        value: "pulsard.log"
+        value: "pulsar3.log"
       - name: "pulsar.log.appender"
-        value: "RoutingAppender"  #"RoutingAppender"
+        value: "RoutingAppender"
       - name: "pulsar.log.root.level"
         value: "debug"
       - name: "pulsar.log.level"
@@ -55,10 +53,6 @@ Configuration:
     Console:
       name: Console
       target: SYSTEM_OUT
-      ThresholdFilter:
-        level: DEBUG #${sys:log.level.console} # “sys:”表示：如果VM参数中没指定这个变量值，则使用本文件中定义的缺省全局变量值
-        onMatch: DEBUG
-        onMismatch: DENY
       PatternLayout:
         Pattern: "%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"
 
@@ -67,7 +61,7 @@ Configuration:
       name: RollingFile
       fileName: "${sys:pulsar.log.dir}/${sys:pulsar.log.file}"
       filePattern: "${sys:pulsar.log.dir}/${sys:pulsar.log.file}-%d{MM-dd-yyyy}-%i.log.gz"
-      immediateFlush: true
+      immediateFlush: false
       PatternLayout:
         Pattern: "%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"
       Policies:
@@ -139,17 +133,15 @@ Configuration:
       level: "${sys:pulsar.log.root.level}"
       additivity: true
       AppenderRef:
-#        - ref: "${sys:pulsar.log.appender}"
-#          level: "${sys:pulsar.log.level}"
-#        - ref: Prometheus
-#          level: info
-        - ref: Console
-#          level: debug
+        - ref: "${sys:pulsar.log.appender}"
+          level: "${sys:pulsar.log.level}"
+        - ref: Prometheus
+          level: info
 
     Logger:
-      - name: org.apache.pulsar #.bookkeeper.bookie.BookieShell
-        level: debug
-        additivity: true
+      - name: org.apache.bookkeeper.bookie.BookieShell
+        level: info
+        additivity: false
         AppenderRef:
           - ref: Console
 

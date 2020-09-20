@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -18,34 +18,18 @@
  */
 package org.apache.pulsar;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.apache.pulsar.common.configuration.PulsarConfigurationLoader.create;
-import static org.apache.pulsar.common.configuration.PulsarConfigurationLoader.isComplete;
-
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.google.common.annotations.VisibleForTesting;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.net.MalformedURLException;
-import java.nio.file.Paths;
-import java.util.Date;
-import java.util.Arrays;
-import java.util.Optional;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-
+import org.apache.bookkeeper.common.util.ReflectionUtils;
 import org.apache.bookkeeper.conf.ServerConfiguration;
 import org.apache.bookkeeper.proto.BookieServer;
 import org.apache.bookkeeper.replication.AutoRecoveryMain;
 import org.apache.bookkeeper.stats.StatsProvider;
-import org.apache.bookkeeper.common.util.ReflectionUtils;
 import org.apache.bookkeeper.util.DirectMemoryUtils;
 import org.apache.commons.configuration.ConfigurationException;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 import org.apache.pulsar.broker.PulsarServerException;
 import org.apache.pulsar.broker.PulsarService;
 import org.apache.pulsar.broker.ServiceConfiguration;
@@ -59,11 +43,44 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.net.MalformedURLException;
+import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Optional;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.pulsar.common.configuration.PulsarConfigurationLoader.create;
+import static org.apache.pulsar.common.configuration.PulsarConfigurationLoader.isComplete;
+
 public class PulsarBrokerStarter {
 
+
     private static ServiceConfiguration loadConfig(String configFile) throws Exception {
+
+//        LogManager.resetConfiguration();
         SLF4JBridgeHandler.removeHandlersForRootLogger();
         SLF4JBridgeHandler.install();
+//        Logger.getLogger("global").setLevel(Level.DEBUG);
+        System.out.println(LogManager.getRootLogger().getLevel());
+//        LogManager.getRootLogger().setLevel(Level.DEBUG);
+        System.out.println(LogManager.getRootLogger().getLevel());
+        System.out.println(LoggerFactory.getLogger(PulsarBrokerStarter.class).isDebugEnabled());
+
+//        SLF4JBridgeHandler.removeHandlersForRootLogger();
+//        SLF4JBridgeHandler.install();
+//        PropertyConfigurator.configure("D:/litaojun/ulmenv/frame/target/classes/log4j.properties");
+//        PropertyConfigurator.configure(PropertyConfigurator.class.getResourceAsStream("/log4j.properties"));
+//        System.out.println("loadConfig********************:"+configFile);
+
+
         ServiceConfiguration config = create((new FileInputStream(configFile)), ServiceConfiguration.class);
         // it validates provided configuration is completed
         isComplete(config);
@@ -95,6 +112,7 @@ public class PulsarBrokerStarter {
     }
 
     private static ServerConfiguration readBookieConfFile(String bookieConfigFile) throws IllegalArgumentException {
+        log.debug("***************************************readBookieConfFile");
         ServerConfiguration bookieConf = new ServerConfiguration();
         try {
             bookieConf.loadConf(new File(bookieConfigFile).toURI().toURL());
@@ -110,7 +128,7 @@ public class PulsarBrokerStarter {
 
         if (bookieConf.getMaxPendingReadRequestPerThread() < bookieConf.getRereplicationEntryBatchSize()) {
             throw new IllegalArgumentException(
-                "rereplicationEntryBatchSize should be smaller than " + "maxPendingReadRequestPerThread");
+                    "rereplicationEntryBatchSize should be smaller than " + "maxPendingReadRequestPerThread");
         }
         return bookieConf;
     }
@@ -128,7 +146,7 @@ public class PulsarBrokerStarter {
         private final ServerConfiguration bookieConfig;
         private final WorkerService functionsWorkerService;
 
-        BrokerStarter(String[] args) throws Exception{
+        BrokerStarter(String[] args) throws Exception {
             StarterArguments starterArguments = new StarterArguments();
             JCommander jcommander = new JCommander(starterArguments);
             jcommander.setProgramName("PulsarBrokerStarter");
@@ -146,7 +164,9 @@ public class PulsarBrokerStarter {
                 throw new IllegalArgumentException("Need to specify a configuration file for broker");
             } else {
                 brokerConfig = loadConfig(starterArguments.brokerConfigFile);
+//                PropertyConfigurator.configure(PropertyConfigurator.class.getResourceAsStream("/log4j2.xml"));
             }
+
 
             int maxFrameSize = brokerConfig.getMaxMessageSize() + Commands.MESSAGE_SIZE_FRAME_PADDING;
             if (maxFrameSize >= DirectMemoryUtils.maxDirectMemory()) {
@@ -155,7 +175,7 @@ public class PulsarBrokerStarter {
 
             if (!NamespaceBundleSplitAlgorithm.availableAlgorithms.containsAll(brokerConfig.getSupportedNamespaceBundleSplitAlgorithms())) {
                 throw new IllegalArgumentException("The given supported namespace bundle split algorithm has unavailable algorithm. " +
-                    "Available algorithms are " + NamespaceBundleSplitAlgorithm.availableAlgorithms);
+                        "Available algorithms are " + NamespaceBundleSplitAlgorithm.availableAlgorithms);
             }
 
             if (!brokerConfig.getSupportedNamespaceBundleSplitAlgorithms().contains(brokerConfig.getDefaultNamespaceBundleSplitAlgorithm())) {
@@ -172,13 +192,13 @@ public class PulsarBrokerStarter {
                 }
                 // worker talks to local broker
                 String hostname = ServiceConfigurationUtils.getDefaultOrConfiguredAddress(
-                    brokerConfig.getAdvertisedAddress());
+                        brokerConfig.getAdvertisedAddress());
                 workerConfig.setWorkerHostname(hostname);
                 workerConfig.setWorkerPort(brokerConfig.getWebServicePort().get());
                 workerConfig.setWorkerId(
-                    "c-" + brokerConfig.getClusterName()
-                        + "-fw-" + hostname
-                        + "-" + workerConfig.getWorkerPort());
+                        "c-" + brokerConfig.getClusterName()
+                                + "-fw-" + hostname
+                                + "-" + workerConfig.getWorkerPort());
                 // inherit broker authorization setting
                 workerConfig.setAuthenticationEnabled(brokerConfig.isAuthenticationEnabled());
                 workerConfig.setAuthenticationProviders(brokerConfig.getAuthenticationProviders());
@@ -212,17 +232,17 @@ public class PulsarBrokerStarter {
             // if no argument to run bookie in cmd line, read from pulsar config
             if (!argsContains(args, "-rb") && !argsContains(args, "--run-bookie")) {
                 checkState(starterArguments.runBookie == false,
-                    "runBookie should be false if has no argument specified");
+                        "runBookie should be false if has no argument specified");
                 starterArguments.runBookie = brokerConfig.isEnableRunBookieTogether();
             }
             if (!argsContains(args, "-ra") && !argsContains(args, "--run-bookie-autorecovery")) {
                 checkState(starterArguments.runBookieAutoRecovery == false,
-                    "runBookieAutoRecovery should be false if has no argument specified");
+                        "runBookieAutoRecovery should be false if has no argument specified");
                 starterArguments.runBookieAutoRecovery = brokerConfig.isEnableRunBookieAutoRecoveryTogether();
             }
 
             if ((starterArguments.runBookie || starterArguments.runBookieAutoRecovery)
-                && isBlank(starterArguments.bookieConfigFile)) {
+                    && isBlank(starterArguments.bookieConfigFile)) {
                 jcommander.usage();
                 throw new IllegalArgumentException("No configuration file for Bookie");
             }
@@ -230,7 +250,7 @@ public class PulsarBrokerStarter {
             // init stats provider
             if (starterArguments.runBookie || starterArguments.runBookieAutoRecovery) {
                 checkState(isNotBlank(starterArguments.bookieConfigFile),
-                    "No configuration file for Bookie");
+                        "No configuration file for Bookie");
                 bookieConfig = readBookieConfFile(starterArguments.bookieConfigFile);
                 Class<? extends StatsProvider> statsProviderClass = bookieConfig.getStatsProviderClass();
                 bookieStatsProvider = ReflectionUtils.newInstance(statsProviderClass);
@@ -258,6 +278,9 @@ public class PulsarBrokerStarter {
         }
 
         public void start() throws Exception {
+
+            System.out.println("********************log:" + log);
+            //org.apache.logging.slf4j.Log4jLogger@328cf0e1
             if (bookieStatsProvider != null) {
                 bookieStatsProvider.start(bookieConfig);
                 log.info("started bookieStatsProvider.");
@@ -272,7 +295,17 @@ public class PulsarBrokerStarter {
             }
 
             pulsarService.start();
+            //log:org.apache.logging.slf4j.Log4jLogger@14d14731
+//            LogManager.resetConfiguration();
+//            PropertyConfigurator.configure(PropertyConfigurator.class.getResourceAsStream("/log4j2.xml"));
+//            LogManager.getRootLogger().setLevel(Level.DEBUG);
+//            LoggerFactory.getLogger(PulsarBrokerStarter.class).debug
+            log.info("log.level:{}|{}", log.isDebugEnabled(), log.isInfoEnabled());
+            log.debug("loadConfig.debug.log");
+
             log.info("PulsarService started.");
+            System.out.println("********************************");
+            System.out.println(ClassLoader.getSystemResource("log4j.properties"));
         }
 
         public void join() throws InterruptedException {
@@ -325,9 +358,9 @@ public class PulsarBrokerStarter {
 
         BrokerStarter starter = new BrokerStarter(args);
         Runtime.getRuntime().addShutdownHook(
-            new Thread(() -> {
-                starter.shutdown();
-            })
+                new Thread(() -> {
+                    starter.shutdown();
+                })
         );
 
         PulsarByteBufAllocator.registerOOMListener(oomException -> {

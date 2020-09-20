@@ -2056,6 +2056,7 @@ public class ManagedLedgerImpl implements ManagedLedger, CreateCallback {
                     trimmerMutex.unlock();
 
                     for (LedgerInfo ls : ledgersToDelete) {
+                        //lan.ledger  这里删除了ledger是否意味着数据变少了  观察来看文件没减少
                         log.info("[{}] Removing ledger {} - size: {}", name, ls.getLedgerId(), ls.getSize());
                         asyncDeleteLedger(ls.getLedgerId(), ls);
                     }
@@ -2886,6 +2887,7 @@ public class ManagedLedgerImpl implements ManagedLedger, CreateCallback {
     }
 
     private boolean currentLedgerIsFull() {
+        //lan 什么时候回调用 检查ledger是否满了
         boolean spaceQuotaReached = (currentLedgerEntries >= config.getMaxEntriesPerLedger()
                 || currentLedgerSize >= (config.getMaxSizePerLedgerMb() * MegaByte));
 

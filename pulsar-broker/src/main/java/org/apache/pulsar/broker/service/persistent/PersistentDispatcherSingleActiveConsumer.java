@@ -76,6 +76,7 @@ public final class PersistentDispatcherSingleActiveConsumer extends AbstractDisp
     public PersistentDispatcherSingleActiveConsumer(ManagedCursor cursor, SubType subscriptionType, int partitionIndex,
             PersistentTopic topic, Subscription subscription) {
         super(subscriptionType, partitionIndex, topic.getName(), subscription);
+        log.info("*****consumer.PersistentDispatcherSingleActiveConsumer");
         this.topic = topic;
         this.name = topic.getName() + " / " + (cursor.getName() != null ? Codec.decode(cursor.getName())
                 : ""/* NonDurableCursor doesn't have name */);
@@ -87,6 +88,7 @@ public final class PersistentDispatcherSingleActiveConsumer extends AbstractDisp
     }
 
     protected void scheduleReadOnActiveConsumer() {
+        log.info("***scheduleReadOnActiveConsumer");
         if (havePendingRead && cursor.cancelPendingReadRequest()) {
             havePendingRead = false;
         }
@@ -132,6 +134,7 @@ public final class PersistentDispatcherSingleActiveConsumer extends AbstractDisp
     }
 
     protected boolean isConsumersExceededOnTopic() {
+        log.info("*****consumer.isConsumersExceededOnTopic");
         Policies policies;
         try {
             // Use getDataIfPresent from zk cache to make the call non-blocking and prevent deadlocks in addConsumer
@@ -183,6 +186,7 @@ public final class PersistentDispatcherSingleActiveConsumer extends AbstractDisp
 
     @Override
     public void readEntriesComplete(final List<Entry> entries, Object obj) {
+        log.info("*****consumer.readEntriesComplete");
         topic.getBrokerService().getTopicOrderedExecutor().executeOrdered(topicName, SafeRun.safeRun(() -> {
             internalReadEntriesComplete(entries, obj);
         }));
@@ -282,6 +286,7 @@ public final class PersistentDispatcherSingleActiveConsumer extends AbstractDisp
 
     @Override
     public void consumerFlow(Consumer consumer, int additionalNumberOfMessages) {
+        log.info("*****consumer.consumerFlow");
         topic.getBrokerService().getTopicOrderedExecutor().executeOrdered(topicName, SafeRun.safeRun(() -> {
             internalConsumerFlow(consumer, additionalNumberOfMessages);
         }));
@@ -313,6 +318,7 @@ public final class PersistentDispatcherSingleActiveConsumer extends AbstractDisp
 
     @Override
     public void redeliverUnacknowledgedMessages(Consumer consumer) {
+        log.info("*****consumer.redeliverUnacknowledgedMessages");
         topic.getBrokerService().getTopicOrderedExecutor().executeOrdered(topicName, SafeRun.safeRun(() -> {
             internalRedeliverUnacknowledgedMessages(consumer);
         }));
@@ -350,6 +356,7 @@ public final class PersistentDispatcherSingleActiveConsumer extends AbstractDisp
 
     @Override
     public void redeliverUnacknowledgedMessages(Consumer consumer, List<PositionImpl> positions) {
+        log.info("*****consumer.redeliverUnacknowledgedMessages");
         // We cannot redeliver single messages to single consumers to preserve ordering.
         positions.forEach(redeliveryTracker::addIfAbsent);
         redeliverUnacknowledgedMessages(consumer);
@@ -357,6 +364,7 @@ public final class PersistentDispatcherSingleActiveConsumer extends AbstractDisp
 
     @Override
     protected void readMoreEntries(Consumer consumer) {
+        log.info("*****consumer.readMoreEntries");
         // consumer can be null when all consumers are disconnected from broker.
         // so skip reading more entries if currently there is no active consumer.
         if (null == consumer) {

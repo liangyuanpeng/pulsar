@@ -1791,11 +1791,12 @@ public class BrokerService implements Closeable, ZooKeeperCacheListener<Policies
         final String topic = pendingTopic.getLeft();
         try {
             checkTopicNsOwnership(topic);
+
             CompletableFuture<Optional<Topic>> pendingFuture = pendingTopic.getRight();
             final Semaphore topicLoadSemaphore = topicLoadRequestSemaphore.get();
             final boolean acquiredPermit = topicLoadSemaphore.tryAcquire();
             createPersistentTopic(topic, true, pendingFuture);
-            pendingFuture.handle((persistentTopic, ex) -> {
+                pendingFuture.handle((persistentTopic, ex) -> {
                 // release permit and process next pending topic
                 if (acquiredPermit) {
                     topicLoadSemaphore.release();

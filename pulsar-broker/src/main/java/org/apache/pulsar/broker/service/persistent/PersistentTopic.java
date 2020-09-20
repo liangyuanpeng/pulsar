@@ -1611,6 +1611,7 @@ public class PersistentTopic extends AbstractTopic implements Topic, AddEntryCal
     public boolean isActive(InactiveTopicDeleteMode deleteMode) {
         switch (deleteMode) {
             case delete_when_no_subscriptions:
+                //lan 客户端关闭了 这个subscriptions一直都存在
                 if (!subscriptions.isEmpty()) {
                     return true;
                 }

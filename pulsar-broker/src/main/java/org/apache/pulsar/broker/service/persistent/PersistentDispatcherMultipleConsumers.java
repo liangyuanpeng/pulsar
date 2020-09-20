@@ -106,6 +106,7 @@ public class PersistentDispatcherMultipleConsumers extends AbstractDispatcherMul
 
     public PersistentDispatcherMultipleConsumers(PersistentTopic topic, ManagedCursor cursor, Subscription subscription) {
         super(subscription);
+        log.info("***PersistentDispatcherMultipleConsumers");
         this.serviceConfig = topic.getBrokerService().pulsar().getConfiguration();
         this.cursor = cursor;
         this.lastIndividualDeletedRangeFromCursorRecovery = cursor.getLastIndividualDeletedRange();
@@ -277,6 +278,7 @@ public class PersistentDispatcherMultipleConsumers extends AbstractDispatcherMul
                 }
 
                 if (dispatchRateLimiter.isPresent() && dispatchRateLimiter.get().isDispatchRateLimitingEnabled()) {
+                    //lan 是否有消费限流
                     if (!dispatchRateLimiter.get().hasMessageDispatchPermit()) {
                         if (log.isDebugEnabled()) {
                             log.debug("[{}] message-read exceeded subscription message-rate {}/{}, schedule after a {}", name,
@@ -290,6 +292,7 @@ public class PersistentDispatcherMultipleConsumers extends AbstractDispatcherMul
                         // if dispatch-rate is in msg then read only msg according to available permit
                         long availablePermitsOnMsg = dispatchRateLimiter.get().getAvailableDispatchRateLimitOnMsg();
                         if (availablePermitsOnMsg > 0) {
+                            //lan 计算可以拉取多少条消息
                             messagesToRead = Math.min(messagesToRead, (int) availablePermitsOnMsg);
                         }
                     }
