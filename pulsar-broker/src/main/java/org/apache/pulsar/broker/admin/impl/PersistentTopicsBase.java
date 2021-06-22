@@ -159,7 +159,9 @@ public class PersistentTopicsBase extends AdminResource {
 
         try {
             String path = String.format("/managed-ledgers/%s/%s", namespaceName.toString(), domain());
+            log.info("begin.get.topic:{}",path);
             for (String topic : managedLedgerListCache().get(path)) {
+                log.info("topic:{}",topic);
                 if (domain().equals(TopicDomain.persistent.toString())) {
                     topics.add(TopicName.get(domain(), namespaceName, decode(topic)).toString());
                 }

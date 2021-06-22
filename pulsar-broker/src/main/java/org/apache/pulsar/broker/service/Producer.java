@@ -27,6 +27,7 @@ import static org.apache.pulsar.common.protocol.Commands.readChecksum;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import io.netty.buffer.ByteBuf;
+import io.netty.util.CharsetUtil;
 import io.netty.util.Recycler;
 import io.netty.util.Recycler.Handle;
 import java.util.Collections;
@@ -213,6 +214,7 @@ public class Producer {
     }
 
     private void publishMessageToTopic(ByteBuf headersAndPayload, long lowestSequenceId, long highestSequenceId, long batchSize, boolean isChunked) {
+        log.info("landev.recive.producer.message:{}\n|***{}",headersAndPayload.toString(CharsetUtil.UTF_8),headersAndPayload.toString(CharsetUtil.US_ASCII));
         topic.publishMessage(headersAndPayload,
                 MessagePublishContext.get(this, lowestSequenceId, highestSequenceId, msgIn, headersAndPayload.readableBytes(), batchSize,
                         isChunked, System.nanoTime()));

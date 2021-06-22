@@ -21,6 +21,7 @@ package org.apache.bookkeeper.mledger.impl;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.util.CharsetUtil;
 import io.netty.util.Recycler;
 import io.netty.util.Recycler.Handle;
 
@@ -108,6 +109,7 @@ class OpAddEntry extends SafeRunnable implements AddCallback, CloseCallback {
             // internally asyncAddEntry() will take the ownership of the buffer and release it at the end
             addOpCount = ManagedLedgerImpl.ADD_OP_COUNT_UPDATER.incrementAndGet(ml);
             lastInitTime = System.nanoTime();
+            log.info("landev.begin.add.entry:{}|\n***|{}",duplicateBuffer.toString(CharsetUtil.UTF_8),duplicateBuffer.toString(CharsetUtil.US_ASCII));
             ledger.asyncAddEntry(duplicateBuffer, this, addOpCount);
         } else {
             log.warn("[{}] initiate with unexpected state {}, expect OPEN state.", ml.getName(), state);

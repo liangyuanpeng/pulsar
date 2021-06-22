@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 
+import com.google.protobuf.TextFormat;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.bookkeeper.common.util.OrderedExecutor;
@@ -57,13 +58,18 @@ public class MetaStoreImpl implements MetaStore {
             MetaStoreCallback<ManagedLedgerInfo> callback) {
         // Try to get the content or create an empty node
         String path = PREFIX + ledgerName;
+        ///managed-ledgers/public/default/persistent/ecf_dev-RETRY
+        log.info("landev.get.metadata.path:{}",path);
         store.get(path)
                 .thenAcceptAsync(optResult -> {
                     if (optResult.isPresent()) {
                         ManagedLedgerInfo info;
                         try {
+                            //二进制数据
+//                            log.info("landev.metadata.opsResult:{}",new String(optResult.get().getValue()));
                             info = ManagedLedgerInfo.parseFrom(optResult.get().getValue());
                             info = updateMLInfoTimestamp(info);
+                            log.info("landev.managedLedger.info:{}", TextFormat.printer().printToString(info));
                             callback.operationComplete(info, optResult.get().getStat());
                         } catch (InvalidProtocolBufferException e) {
                             callback.operationFailed(getException(e));
