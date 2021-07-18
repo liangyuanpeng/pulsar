@@ -25,6 +25,7 @@ import static org.apache.bookkeeper.mledger.impl.ManagedLedgerImpl.createManaged
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Longs;
 
+import com.google.protobuf.TextFormat;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 
@@ -35,6 +36,8 @@ import java.util.List;
 import org.apache.bookkeeper.client.api.BKException;
 import org.apache.bookkeeper.client.api.LedgerEntry;
 import org.apache.bookkeeper.client.api.ReadHandle;
+import org.apache.bookkeeper.common.util.JsonUtil;
+import org.apache.bookkeeper.common.util.JsonUtil.ParseJsonException;
 import org.apache.bookkeeper.mledger.AsyncCallbacks.ReadEntriesCallback;
 import org.apache.bookkeeper.mledger.AsyncCallbacks.ReadEntryCallback;
 import org.apache.bookkeeper.mledger.ManagedLedgerException;
@@ -221,6 +224,11 @@ public class EntryCacheImpl implements EntryCache {
                             if (iterator.hasNext()) {
                                 LedgerEntry ledgerEntry = iterator.next();
                                 EntryImpl returnEntry = EntryImpl.create(ledgerEntry);
+                                try {
+                                    log.info("landev.returnEntry:{}", JsonUtil.toJson(returnEntry));
+                                } catch (ParseJsonException e) {
+                                    e.printStackTrace();
+                                }
 
                                 manager.mlFactoryMBean.recordCacheMiss(1, returnEntry.getLength());
                                 ml.mbean.addReadEntriesSample(1, returnEntry.getLength());

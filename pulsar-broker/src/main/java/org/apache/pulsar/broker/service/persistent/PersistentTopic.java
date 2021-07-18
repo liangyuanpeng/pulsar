@@ -47,6 +47,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import org.apache.bookkeeper.common.util.JsonUtil;
+import org.apache.bookkeeper.common.util.JsonUtil.ParseJsonException;
 import org.apache.bookkeeper.mledger.AsyncCallbacks;
 import org.apache.bookkeeper.mledger.AsyncCallbacks.AddEntryCallback;
 import org.apache.bookkeeper.mledger.AsyncCallbacks.CloseCallback;
@@ -2309,6 +2311,7 @@ public class PersistentTopic extends AbstractTopic implements Topic, AddEntryCal
             return completableFuture;
         }
         ManagedLedgerImpl ledgerImpl = (ManagedLedgerImpl) ledger;
+//        log.info("landev.ledgerImpl:{}", ledgerImpl.toString());
         if (!ledgerImpl.ledgerExists(position.getLedgerId())) {
             completableFuture
                     .complete(MessageId.earliest);

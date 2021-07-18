@@ -1238,7 +1238,7 @@ public class PulsarService implements AutoCloseable {
         }
     }
 
-    private void startWorkerService(AuthenticationService authenticationService,
+    private void    startWorkerService(AuthenticationService authenticationService,
                                     AuthorizationService authorizationService)
             throws InterruptedException, IOException, KeeperException {
         if (functionWorkerService.isPresent()) {

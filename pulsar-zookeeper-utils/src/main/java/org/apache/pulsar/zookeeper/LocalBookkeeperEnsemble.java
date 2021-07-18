@@ -297,6 +297,7 @@ public class LocalBookkeeperEnsemble {
             bsConfs[i].setLedgerDirNames(new String[] { bkDataDir.getPath() });
             bsConfs[i].setAllocatorPoolingPolicy(PoolingPolicy.UnpooledHeap);
             bsConfs[i].setAllowEphemeralPorts(true);
+            System.out.println(bsConfs[i].getAdvertisedAddress());
 
             try {
                 bs[i] = new BookieServer(bsConfs[i], NullStatsLogger.INSTANCE, BookieServiceInfo.NO_INFO);
@@ -427,10 +428,10 @@ public class LocalBookkeeperEnsemble {
 
         runZookeeper(1000);
         initializeZookeper();
-        runBookies(conf);
-        if (enableStreamStorage) {
-            runStreamStorage(new CompositeConfiguration());
-        }
+//        runBookies(conf);
+//        if (enableStreamStorage) {
+//            runStreamStorage(new CompositeConfiguration());
+//        }
     }
 
     public void stopBK(int i) {

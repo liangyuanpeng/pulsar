@@ -248,6 +248,7 @@ public class PulsarStandalone implements AutoCloseable {
         log.debug("--- setup PulsarStandaloneStarter ---");
 
         if (!this.isOnlyBroker()) {
+            //httpServerPort
             ServerConfiguration bkServerConf = new ServerConfiguration();
             bkServerConf.loadConf(new File(configFile).toURI().toURL());
 
@@ -256,6 +257,7 @@ public class PulsarStandalone implements AutoCloseable {
                     this.getNumOfBk(), this.getZkPort(), this.getBkPort(), this.getStreamStoragePort(), this.getZkDir(),
                     this.getBkDir(), this.isWipeData(), "127.0.0.1");
             bkEnsemble.startStandalone(bkServerConf, !this.isNoStreamStorage());
+
         }
 
         if (this.isNoBroker()) {

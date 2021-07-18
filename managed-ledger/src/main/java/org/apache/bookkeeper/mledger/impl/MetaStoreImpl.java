@@ -20,6 +20,7 @@ package org.apache.bookkeeper.mledger.impl;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import com.google.protobuf.TextFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +28,8 @@ import java.util.concurrent.CompletionException;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.bookkeeper.common.util.JsonUtil;
+import org.apache.bookkeeper.common.util.JsonUtil.ParseJsonException;
 import org.apache.bookkeeper.common.util.OrderedExecutor;
 import org.apache.bookkeeper.mledger.ManagedLedgerException;
 import org.apache.bookkeeper.mledger.ManagedLedgerException.MetaStoreException;
@@ -63,6 +66,8 @@ public class MetaStoreImpl implements MetaStore {
                         ManagedLedgerInfo info;
                         try {
                             info = ManagedLedgerInfo.parseFrom(optResult.get().getValue());
+                            log.info("landev.ManagedLedgerInfo:{}",TextFormat.printer().printToString(info));
+
                             info = updateMLInfoTimestamp(info);
                             callback.operationComplete(info, optResult.get().getStat());
                         } catch (InvalidProtocolBufferException e) {
@@ -139,6 +144,7 @@ public class MetaStoreImpl implements MetaStore {
                     if (optRes.isPresent()) {
                         try {
                             ManagedCursorInfo info = ManagedCursorInfo.parseFrom(optRes.get().getValue());
+                            log.info("landev.ManagedCursorInfo:{}", TextFormat.printer().printToString(info));
                             callback.operationComplete(info, optRes.get().getStat());
                         } catch (InvalidProtocolBufferException e) {
                             callback.operationFailed(getException(e));

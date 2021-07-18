@@ -139,6 +139,7 @@ public class PulsarClusterMetadataSetup {
     }
 
     public static void main(String[] args) throws Exception {
+        // -Dlog4j.configurationFile=conf/log4j2.yaml
         Arguments arguments = new Arguments();
         JCommander jcommander = new JCommander();
         try {

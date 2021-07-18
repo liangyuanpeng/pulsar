@@ -26,11 +26,12 @@ import io.netty.util.Recycler;
 import io.netty.util.Recycler.Handle;
 import io.netty.util.ReferenceCounted;
 
+import java.io.Serializable;
 import org.apache.bookkeeper.client.api.LedgerEntry;
 import org.apache.bookkeeper.mledger.Entry;
 import org.apache.bookkeeper.mledger.util.AbstractCASReferenceCounted;
 
-public final class EntryImpl extends AbstractCASReferenceCounted implements Entry, Comparable<EntryImpl>, ReferenceCounted {
+public final class EntryImpl extends AbstractCASReferenceCounted implements Entry, Comparable<EntryImpl>, ReferenceCounted,Serializable{
 
     private static final Recycler<EntryImpl> RECYCLER = new Recycler<EntryImpl>() {
         @Override
