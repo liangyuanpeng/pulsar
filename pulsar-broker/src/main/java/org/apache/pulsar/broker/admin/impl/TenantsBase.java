@@ -68,6 +68,14 @@ public class TenantsBase extends AdminResource {
     }
 
     @GET
+    @Path("/check")
+    public String check(){
+        pulsar().getBrokerService().checkMessageExpiry();
+        log.info("begin.checkMessageExpiry.");
+        return "success|"+System.currentTimeMillis();
+    }
+
+    @GET
     @Path("/{tenant}")
     @ApiOperation(value = "Get the admin configuration for a given tenant.")
     @ApiResponses(value = { @ApiResponse(code = 403, message = "The requester doesn't have admin permissions"),

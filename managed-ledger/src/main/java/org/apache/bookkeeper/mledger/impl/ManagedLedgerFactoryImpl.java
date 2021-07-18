@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 
 import org.apache.bookkeeper.client.BKException;
 import org.apache.bookkeeper.client.BookKeeper;
+import org.apache.bookkeeper.common.util.JsonUtil;
 import org.apache.bookkeeper.common.util.OrderedExecutor;
 import org.apache.bookkeeper.common.util.OrderedScheduler;
 import org.apache.bookkeeper.conf.ClientConfiguration;
@@ -616,6 +617,11 @@ public class ManagedLedgerFactoryImpl implements ManagedLedgerFactory {
                     ledgerInfo.entries = pbLedgerInfo.hasEntries() ? pbLedgerInfo.getEntries() : null;
                     ledgerInfo.size = pbLedgerInfo.hasSize() ? pbLedgerInfo.getSize() : null;
                     ledgerInfo.isOffloaded = pbLedgerInfo.hasOffloadContext();
+                    try {
+                        log.info("landev.get.ledgerInfo:{}",JsonUtil.toJson(ledgerInfo));
+                    } catch (JsonUtil.ParseJsonException e) {
+                        e.printStackTrace();
+                    }
                     info.ledgers.add(ledgerInfo);
                 }
 
@@ -669,6 +675,11 @@ public class ManagedLedgerFactoryImpl implements ManagedLedgerFactory {
                                                 }
                                             }
 
+                                            try {
+                                                log.info("landev.get.cursorInfo:{}", JsonUtil.toJson(cursorInfo));
+                                            } catch (JsonUtil.ParseJsonException e) {
+                                                e.printStackTrace();
+                                            }
                                             info.cursors.put(cursorName, cursorInfo);
                                             cursorFuture.complete(null);
                                         }
@@ -757,6 +768,8 @@ public class ManagedLedgerFactoryImpl implements ManagedLedgerFactory {
             public void getInfoComplete(ManagedLedgerInfo info, Object ctx) {
                 BookKeeper bkc = getBookKeeper();
 
+                //public/default/persistent/smt_ecf_aq_level_dev
+                log.info("begin.delete.topic.name.ledgerName:{}",managedLedgerName);
                 // First delete all cursors resources
                 List<CompletableFuture<Void>> futures = info.cursors.entrySet().stream()
                         .map(e -> deleteCursor(bkc, managedLedgerName, e.getKey(), e.getValue()))

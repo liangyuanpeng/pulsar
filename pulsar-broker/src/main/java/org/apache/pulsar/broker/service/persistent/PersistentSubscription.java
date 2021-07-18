@@ -888,6 +888,7 @@ public class PersistentSubscription implements Subscription {
 
     @Override
     public boolean expireMessages(int messageTTLInSeconds) {
+        log.info("getNumberOfEntriesInBacklog:{}|{}|{}|{}",topic.getName(),getNumberOfEntriesInBacklog(false),getNumberOfEntriesInBacklog(false) < MINIMUM_BACKLOG_FOR_EXPIRY_CHECK,!topic.isOldestMessageExpired(cursor, messageTTLInSeconds));
         if ((getNumberOfEntriesInBacklog(false) == 0) || (dispatcher != null && dispatcher.isConsumerConnected()
                 && getNumberOfEntriesInBacklog(false) < MINIMUM_BACKLOG_FOR_EXPIRY_CHECK
                 && !topic.isOldestMessageExpired(cursor, messageTTLInSeconds))) {

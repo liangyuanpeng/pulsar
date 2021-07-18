@@ -869,6 +869,9 @@ public class BrokerService implements Closeable, ZooKeeperCacheListener<Policies
         }
 
         CompletableFuture<Void> future = new CompletableFuture<>();
+        //persistent://public/default/smt_ecf_aq_current_dev
+        //public/default/persistent/smt_ecf_aq_current_dev
+        log.info("begin.delete.topic.name:{}|{}",topic,tn.getPersistenceNamingEncoding());
         managedLedgerFactory.asyncDelete(tn.getPersistenceNamingEncoding(), new DeleteLedgerCallback() {
             @Override
             public void deleteLedgerComplete(Object ctx) {
@@ -1464,6 +1467,7 @@ public class BrokerService implements Closeable, ZooKeeperCacheListener<Policies
      * Iterates over all loaded topics in the broker
      */
     public void forEachTopic(Consumer<Topic> consumer) {
+        log.info("topics.size:{}",topics.size());
         topics.forEach((n, t) -> {
             Optional<Topic> topic = extractTopic(t);
             topic.ifPresent(consumer::accept);

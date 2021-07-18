@@ -608,6 +608,7 @@ public class ManagedLedgerImpl implements ManagedLedger, CreateCallback {
     @Override
     public void asyncAddEntry(final byte[] data, int offset, int length, final AddEntryCallback callback,
             final Object ctx) {
+        log.info("landev.data:{}",new String(data));
         ByteBuf buffer = Unpooled.wrappedBuffer(data, offset, length);
         asyncAddEntry(buffer, callback, ctx);
     }
@@ -617,6 +618,8 @@ public class ManagedLedgerImpl implements ManagedLedger, CreateCallback {
         if (log.isDebugEnabled()) {
             log.debug("[{}] asyncAddEntry size={} state={}", name, buffer.readableBytes(), state);
         }
+        log.info("landev.data.buffer:{}",buffer.toString());
+
 
         OpAddEntry addOperation = OpAddEntry.create(this, buffer, callback, ctx);
 
@@ -2313,6 +2316,7 @@ public class ManagedLedgerImpl implements ManagedLedger, CreateCallback {
         AtomicReference<ManagedLedgerException> cursorDeleteException = new AtomicReference<>();
         AtomicInteger cursorsToDelete = new AtomicInteger(cursors.size());
         for (ManagedCursor cursor : cursors) {
+            log.info("lan.delete.cursor:{}",cursor.getName());
             asyncDeleteCursor(cursor.getName(), new DeleteCursorCallback() {
                 @Override
                 public void deleteCursorComplete(Object ctx) {

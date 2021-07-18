@@ -712,6 +712,7 @@ public class PersistentReplicator extends AbstractReplicator implements Replicat
             return false;
         }
         if (expiryMonitor != null) {
+            log.info("begin.expireMessages!!!!!!!!!!!!!!!!!!|{}|{}|{}|{}",topicName,cursor.getNumberOfEntriesInBacklog(false),cursor.getNumberOfEntriesInBacklog(false) < MINIMUM_BACKLOG_FOR_EXPIRY_CHECK,!topic.isOldestMessageExpired(cursor, messageTTLInSeconds));
             return expiryMonitor.expireMessages(messageTTLInSeconds);
         }
         return false;

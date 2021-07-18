@@ -1210,8 +1210,16 @@ public class PersistentTopic extends AbstractTopic implements Topic, AddEntryCal
             int message_ttl_in_seconds = getMessageTTL();
 
             if (message_ttl_in_seconds != 0) {
-                subscriptions.forEach((subName, sub) -> sub.expireMessages(message_ttl_in_seconds));
-                replicators.forEach((region, replicator) -> ((PersistentReplicator)replicator).expireMessages(message_ttl_in_seconds));
+                log.info("subscriptions:{}",subscriptions.size());
+                for (PersistentSubscription sub : subscriptions.values()) {
+                    sub.expireMessages(message_ttl_in_seconds);
+                }
+//                System.out.println(replicators.size());
+                for (Replicator replicator : replicators.values()) {
+                    ((PersistentReplicator)replicator).expireMessages(message_ttl_in_seconds);
+                }
+//                subscriptions.forEach((subName, sub) -> sub.expireMessages(message_ttl_in_seconds));
+//                replicators.forEach((region, replicator) -> ((PersistentReplicator)replicator).expireMessages(message_ttl_in_seconds));
             }
         } catch (Exception e) {
             if (log.isDebugEnabled()) {
