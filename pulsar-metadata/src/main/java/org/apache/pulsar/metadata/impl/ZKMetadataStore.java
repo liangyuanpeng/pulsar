@@ -19,38 +19,27 @@
 package org.apache.pulsar.metadata.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.bookkeeper.common.util.JsonUtil;
+import org.apache.bookkeeper.util.ZkUtils;
+import org.apache.bookkeeper.zookeeper.BoundExponentialBackoffRetryPolicy;
+import org.apache.bookkeeper.zookeeper.ZooKeeperClient;
+import org.apache.pulsar.common.util.FutureUtil;
+import org.apache.pulsar.metadata.api.*;
+import org.apache.pulsar.metadata.api.MetadataStoreException.AlreadyExistsException;
+import org.apache.pulsar.metadata.api.MetadataStoreException.BadVersionException;
+import org.apache.pulsar.metadata.api.MetadataStoreException.NotFoundException;
+import org.apache.pulsar.metadata.api.extended.CreateOption;
+import org.apache.pulsar.metadata.api.extended.MetadataStoreExtended;
+import org.apache.zookeeper.*;
+import org.apache.zookeeper.KeeperException.Code;
 
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-
-import lombok.extern.slf4j.Slf4j;
-
-import org.apache.bookkeeper.util.ZkUtils;
-import org.apache.bookkeeper.zookeeper.BoundExponentialBackoffRetryPolicy;
-import org.apache.bookkeeper.zookeeper.ZooKeeperClient;
-import org.apache.pulsar.common.util.FutureUtil;
-import org.apache.pulsar.metadata.api.GetResult;
-import org.apache.pulsar.metadata.api.MetadataStoreConfig;
-import org.apache.pulsar.metadata.api.MetadataStoreException;
-import org.apache.pulsar.metadata.api.MetadataStoreException.AlreadyExistsException;
-import org.apache.pulsar.metadata.api.MetadataStoreException.BadVersionException;
-import org.apache.pulsar.metadata.api.MetadataStoreException.NotFoundException;
-import org.apache.pulsar.metadata.api.MetadataStoreLifecycle;
-import org.apache.pulsar.metadata.api.Notification;
-import org.apache.pulsar.metadata.api.NotificationType;
-import org.apache.pulsar.metadata.api.Stat;
-import org.apache.pulsar.metadata.api.extended.MetadataStoreExtended;
-import org.apache.pulsar.metadata.api.extended.CreateOption;
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.KeeperException.Code;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooDefs;
-import org.apache.zookeeper.ZooKeeper;
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 public class ZKMetadataStore extends AbstractMetadataStore implements MetadataStoreExtended, Watcher, MetadataStoreLifecycle {
@@ -61,7 +50,11 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
     private final ZooKeeper zkc;
     private ZKSessionWatcher sessionWatcher;
 
+    private EtcdMetadataStore etcdMetadataStore;
+
     public ZKMetadataStore(String metadataURL, MetadataStoreConfig metadataStoreConfig) throws MetadataStoreException {
+       etcdMetadataStore = new EtcdMetadataStore(metadataURL, metadataStoreConfig);
+
         try {
             this.metadataURL = metadataURL;
             this.metadataStoreConfig = metadataStoreConfig;
@@ -127,6 +120,20 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
             }, null);
         } catch (Throwable t) {
             future.completeExceptionally(new MetadataStoreException(t));
+        }
+
+        try {
+            Optional<GetResult> getResult = future.get();
+            log.info("getResult:{}|{}|{}|{}",path,new String(getResult.get().getValue()),JsonUtil.toJson(getResult.get().getStat()),JsonUtil.toJson(getResult.get()));
+            CompletableFuture future2 = new CompletableFuture();
+            future2.complete(getResult);
+            return future2;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (JsonUtil.ParseJsonException e) {
+            e.printStackTrace();
         }
 
         return future;
@@ -207,6 +214,7 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
     @Override
     public CompletableFuture<Stat> storePut(String path, byte[] value, Optional<Long> optExpectedVersion,
             EnumSet<CreateOption> options) {
+        log.info("metadata.storePut");
         boolean hasVersion = optExpectedVersion.isPresent();
         int expectedVersion = optExpectedVersion.orElse(-1L).intValue();
 
@@ -256,6 +264,20 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
             }
         } catch (Throwable t) {
             future.completeExceptionally(new MetadataStoreException(t));
+        }
+        try {
+            Stat stat = future.get();
+            log.info("stat:{}|{}",path, JsonUtil.toJson(stat));
+
+            CompletableFuture future2 = new CompletableFuture<>();
+            future2.complete(stat);
+            return future2;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (JsonUtil.ParseJsonException e) {
+            e.printStackTrace();
         }
 
         return future;
