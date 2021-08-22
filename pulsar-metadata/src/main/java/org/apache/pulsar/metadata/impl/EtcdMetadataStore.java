@@ -51,7 +51,7 @@ public class EtcdMetadataStore extends AbstractMetadataStore implements Metadata
 
 
     public EtcdMetadataStore(String metadataURL, MetadataStoreConfig metadataStoreConfig) throws MetadataStoreException {
-        log.info("metadata.EtcdMetadataStore");
+        log.info("dev.metadata.etcd.EtcdMetadataStore");
         try {
             this.metadataURL = metadataURL;
             this.metadataStoreConfig = metadataStoreConfig;
@@ -72,7 +72,7 @@ public class EtcdMetadataStore extends AbstractMetadataStore implements Metadata
 
     @Override
     public CompletableFuture<Optional<GetResult>> get(String path) {
-        log.info("metadata.get");
+        log.info("dev.metadata.etcd.get");
         CompletableFuture<Optional<GetResult>> future = new CompletableFuture<>();
 
 //        [18:34:31.390] INFO  org.apache.pulsar.metadata.impl.ZKMetadataStore 124 get - getResult:/loadbalance/leader|{
@@ -84,7 +84,7 @@ public class EtcdMetadataStore extends AbstractMetadataStore implements Metadata
 
     @Override
     public CompletableFuture<List<String>> getChildrenFromStore(String path) {
-        log.info("metadata.getChildrenFromStore");
+        log.info("dev.metadata.etcd.getChildrenFromStore");
         CompletableFuture<List<String>> future = new CompletableFuture<>();
 
         return future;
@@ -92,21 +92,21 @@ public class EtcdMetadataStore extends AbstractMetadataStore implements Metadata
 
     @Override
     public CompletableFuture<Boolean> existsFromStore(String path) {
-        log.info("metadata.existsFromStore");
+        log.info("dev.metadata.etcd.existsFromStore");
         CompletableFuture<Boolean> future = new CompletableFuture<>();
         return future;
     }
 
     @Override
     public CompletableFuture<Stat> put(String path, byte[] value, Optional<Long> optExpectedVersion) {
-        log.info("metadata.put");
+        log.info("dev.metadata.etcd.put");
         return put(path, value, optExpectedVersion, EnumSet.noneOf(CreateOption.class));
     }
 
     @Override
     public CompletableFuture<Stat> storePut(String path, byte[] value, Optional<Long> optExpectedVersion,
             EnumSet<CreateOption> options) {
-        log.info("metadata.storePut");
+        log.info("dev.metadata.etcd.storePut");
         boolean hasVersion = optExpectedVersion.isPresent();
         int expectedVersion = optExpectedVersion.orElse(-1L).intValue();
 
@@ -128,7 +128,7 @@ public class EtcdMetadataStore extends AbstractMetadataStore implements Metadata
 
     @Override
     public CompletableFuture<Void> storeDelete(String path, Optional<Long> optExpectedVersion) {
-        log.info("metadata.storeDelete");
+        log.info("dev.metadata.etcd.storeDelete");
         int expectedVersion = optExpectedVersion.orElse(-1L).intValue();
 
         CompletableFuture<Void> future = new CompletableFuture<>();
@@ -138,7 +138,7 @@ public class EtcdMetadataStore extends AbstractMetadataStore implements Metadata
 
     @Override
     public void close() throws Exception {
-        log.info("metadata.close");
+        log.info("dev.metadata.etcd.close");
         super.close();
     }
 
@@ -159,7 +159,7 @@ public class EtcdMetadataStore extends AbstractMetadataStore implements Metadata
 
     @Override
     public void process(WatchedEvent event) {
-        log.info("metadata.process");
+        log.info("dev.metadata.etcd.process");
         if (log.isDebugEnabled()) {
             log.debug("Received ZK watch : {}", event);
         }
@@ -210,7 +210,7 @@ public class EtcdMetadataStore extends AbstractMetadataStore implements Metadata
 
     @Override
     public CompletableFuture<Void> initializeCluster() {
-        log.info("metadata.initializeCluster");
+        log.info("dev.metadata.etcd.initializeCluster");
 
         if (this.metadataURL == null) {
             return FutureUtil.failedFuture(new MetadataStoreException("metadataURL is not set"));

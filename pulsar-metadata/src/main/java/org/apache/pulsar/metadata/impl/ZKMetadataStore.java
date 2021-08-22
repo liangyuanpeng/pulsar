@@ -87,6 +87,7 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
     @Override
     public CompletableFuture<Optional<GetResult>> get(String path) {
         CompletableFuture<Optional<GetResult>> future = new CompletableFuture<>();
+        log.info("dev.metadata.zk.get");
 
         try {
             zkc.getData(path, this, (rc, path1, ctx, data, stat) -> {
@@ -124,7 +125,7 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
 
         try {
             Optional<GetResult> getResult = future.get();
-            log.info("getResult:{}|{}|{}|{}",path,new String(getResult.get().getValue()),JsonUtil.toJson(getResult.get().getStat()),JsonUtil.toJson(getResult.get()));
+            log.info("dev.metadata.zk.getResult:{}|{}|{}|{}",path,new String(getResult.get().getValue()),JsonUtil.toJson(getResult.get().getStat()),JsonUtil.toJson(getResult.get()));
             CompletableFuture future2 = new CompletableFuture();
             future2.complete(getResult);
             return future2;
@@ -141,6 +142,7 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
 
     @Override
     public CompletableFuture<List<String>> getChildrenFromStore(String path) {
+        log.info("dev.metadata.zk.getChildrenFromStore");
         CompletableFuture<List<String>> future = new CompletableFuture<>();
 
         try {
@@ -214,7 +216,7 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
     @Override
     public CompletableFuture<Stat> storePut(String path, byte[] value, Optional<Long> optExpectedVersion,
             EnumSet<CreateOption> options) {
-        log.info("metadata.storePut");
+        log.info("dev.metadata.zk..storePut");
         boolean hasVersion = optExpectedVersion.isPresent();
         int expectedVersion = optExpectedVersion.orElse(-1L).intValue();
 
@@ -267,7 +269,7 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
         }
         try {
             Stat stat = future.get();
-            log.info("stat:{}|{}",path, JsonUtil.toJson(stat));
+            log.info("dev.metadata.zk.stat:{}|{}",path, JsonUtil.toJson(stat));
 
             CompletableFuture future2 = new CompletableFuture<>();
             future2.complete(stat);
@@ -285,6 +287,7 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
 
     @Override
     public CompletableFuture<Void> storeDelete(String path, Optional<Long> optExpectedVersion) {
+        log.info("dev.metadata.zk.storeDelete");
         int expectedVersion = optExpectedVersion.orElse(-1L).intValue();
 
         CompletableFuture<Void> future = new CompletableFuture<>();
@@ -323,6 +326,7 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
     }
 
     private static MetadataStoreException getException(Code code, String path) {
+
         KeeperException ex = KeeperException.create(code, path);
 
         switch (code) {
@@ -339,6 +343,7 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
 
     @Override
     public void process(WatchedEvent event) {
+        log.info("dev.metadata.zk.process");
         if (log.isDebugEnabled()) {
             log.debug("Received ZK watch : {}", event);
         }
@@ -393,6 +398,7 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
 
     @Override
     public CompletableFuture<Void> initializeCluster() {
+        log.info("dev.metadata.zk.initializeCluster");
         if (this.metadataURL == null) {
             return FutureUtil.failedFuture(new MetadataStoreException("metadataURL is not set"));
         }
