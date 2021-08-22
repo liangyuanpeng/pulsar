@@ -19,6 +19,8 @@
 package org.apache.pulsar.metadata.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.etcd.jetcd.Client;
+import io.etcd.jetcd.KV;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.bookkeeper.util.ZkUtils;
 import org.apache.bookkeeper.zookeeper.BoundExponentialBackoffRetryPolicy;
@@ -44,11 +46,19 @@ public class EtcdMetadataStore extends AbstractMetadataStore implements Metadata
     private final String metadataURL;
     private final MetadataStoreConfig metadataStoreConfig;
 
+    private Client client;
+    private KV kvClient;
+
+
     public EtcdMetadataStore(String metadataURL, MetadataStoreConfig metadataStoreConfig) throws MetadataStoreException {
         log.info("metadata.EtcdMetadataStore");
         try {
             this.metadataURL = metadataURL;
             this.metadataStoreConfig = metadataStoreConfig;
+
+             client = Client.builder().endpoints("http://localhost:2379").build();
+             kvClient = client.getKVClient();
+
         } catch (Throwable t) {
             throw new MetadataStoreException(t);
         }
