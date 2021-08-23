@@ -56,8 +56,14 @@ class ProtocolHandlerUtils {
         }
     }
 
+    public static void main(String[] args) throws IOException {
+        ProtocolHandlerDefinition protocolHandlerDefinition = getProtocolHandlerDefinition("/home/yunhorn/repo/git/pulsar/protocols/pulsar-protocol-handler-socketio-1.0-SNAPSHOT.nar", "/tmp");
+        System.out.println(protocolHandlerDefinition==null);
+    }
+
     private static ProtocolHandlerDefinition getProtocolHandlerDefinition(NarClassLoader ncl) throws IOException {
         String configStr = ncl.getServiceDefinition(PULSAR_PROTOCOL_HANDLER_DEFINITION_FILE);
+        log.info("configStr:{}",configStr);
 
         return ObjectMapperFactory.getThreadLocalYaml().readValue(
             configStr, ProtocolHandlerDefinition.class
@@ -85,6 +91,8 @@ class ProtocolHandlerUtils {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(path, "*.nar")) {
             for (Path archive : stream) {
                 try {
+                    // /home/yunhorn/repo/git/pulsar/protocols/pulsar-protocol-handler-socketio-1.0-SNAPSHOT.nar|/tmp
+                    log.info("dev.lan protocol nar:{}|{}",archive.toString(), narExtractionDirectory);
                     ProtocolHandlerDefinition phDef =
                         ProtocolHandlerUtils.getProtocolHandlerDefinition(archive.toString(), narExtractionDirectory);
                     log.info("Found protocol handler from {} : {}", archive, phDef);

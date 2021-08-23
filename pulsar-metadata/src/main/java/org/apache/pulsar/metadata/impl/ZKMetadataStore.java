@@ -88,6 +88,9 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
     public CompletableFuture<Optional<GetResult>> get(String path) {
         CompletableFuture<Optional<GetResult>> future = new CompletableFuture<>();
         log.info("dev.metadata.zk.get");
+        CompletableFuture.runAsync(()->{
+            etcdMetadataStore.get(path);
+        });
 
         try {
             zkc.getData(path, this, (rc, path1, ctx, data, stat) -> {
@@ -125,10 +128,12 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
 
         try {
             Optional<GetResult> getResult = future.get();
-            log.info("dev.metadata.zk.getResult:{}|{}|{}|{}",path,new String(getResult.get().getValue()),JsonUtil.toJson(getResult.get().getStat()),JsonUtil.toJson(getResult.get()));
-            CompletableFuture future2 = new CompletableFuture();
-            future2.complete(getResult);
-            return future2;
+            if(getResult.isPresent()) {
+                log.info("dev.metadata.zk.getResult:{}|{}|{}|{}", path, new String(getResult.get().getValue()), JsonUtil.toJson(getResult.get().getStat()), JsonUtil.toJson(getResult.get()));
+                CompletableFuture future2 = new CompletableFuture();
+                future2.complete(getResult);
+                return future2;
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -144,6 +149,9 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
     public CompletableFuture<List<String>> getChildrenFromStore(String path) {
         log.info("dev.metadata.zk.getChildrenFromStore");
         CompletableFuture<List<String>> future = new CompletableFuture<>();
+        CompletableFuture.runAsync(()->{
+            etcdMetadataStore.getChildrenFromStore(path);
+        });
 
         try {
             zkc.getChildren(path, this, (rc, path1, ctx, children) -> {
@@ -187,6 +195,9 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
     @Override
     public CompletableFuture<Boolean> existsFromStore(String path) {
         CompletableFuture<Boolean> future = new CompletableFuture<>();
+        CompletableFuture.runAsync(()->{
+            etcdMetadataStore.existsFromStore(path);
+        });
 
         try {
             zkc.exists(path, this, (rc, path1, ctx, stat) -> {
@@ -210,6 +221,9 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
 
     @Override
     public CompletableFuture<Stat> put(String path, byte[] value, Optional<Long> optExpectedVersion) {
+        CompletableFuture.runAsync(()->{
+            etcdMetadataStore.put(path,value,optExpectedVersion);
+        });
         return put(path, value, optExpectedVersion, EnumSet.noneOf(CreateOption.class));
     }
 
@@ -217,6 +231,9 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
     public CompletableFuture<Stat> storePut(String path, byte[] value, Optional<Long> optExpectedVersion,
             EnumSet<CreateOption> options) {
         log.info("dev.metadata.zk..storePut");
+        CompletableFuture.runAsync(()->{
+            etcdMetadataStore.put(path,value,optExpectedVersion,options);
+        });
         boolean hasVersion = optExpectedVersion.isPresent();
         int expectedVersion = optExpectedVersion.orElse(-1L).intValue();
 
@@ -288,6 +305,11 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
     @Override
     public CompletableFuture<Void> storeDelete(String path, Optional<Long> optExpectedVersion) {
         log.info("dev.metadata.zk.storeDelete");
+
+        CompletableFuture.runAsync(()->{
+            etcdMetadataStore.storeDelete(path,optExpectedVersion);
+        });
+
         int expectedVersion = optExpectedVersion.orElse(-1L).intValue();
 
         CompletableFuture<Void> future = new CompletableFuture<>();
@@ -315,6 +337,13 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
         if (isZkManaged) {
             zkc.close();
         }
+        CompletableFuture.runAsync(()->{
+            try {
+                etcdMetadataStore.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
         sessionWatcher.close();
         super.close();
     }
@@ -347,6 +376,9 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
         if (log.isDebugEnabled()) {
             log.debug("Received ZK watch : {}", event);
         }
+        CompletableFuture.runAsync(()->{
+            etcdMetadataStore.process(event);
+        });
         String path = event.getPath();
         if (path == null) {
             // Ignore Session events
@@ -399,6 +431,9 @@ public class ZKMetadataStore extends AbstractMetadataStore implements MetadataSt
     @Override
     public CompletableFuture<Void> initializeCluster() {
         log.info("dev.metadata.zk.initializeCluster");
+        CompletableFuture.runAsync(()->{
+            etcdMetadataStore.initializeCluster();
+        });
         if (this.metadataURL == null) {
             return FutureUtil.failedFuture(new MetadataStoreException("metadataURL is not set"));
         }

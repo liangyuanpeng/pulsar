@@ -56,8 +56,8 @@ public class EtcdMetadataStore extends AbstractMetadataStore implements Metadata
             this.metadataURL = metadataURL;
             this.metadataStoreConfig = metadataStoreConfig;
 
-             client = Client.builder().endpoints("http://localhost:2379").build();
-             kvClient = client.getKVClient();
+//             client = Client.builder().endpoints("http://localhost:2379").build();
+//             kvClient = client.getKVClient();
 
         } catch (Throwable t) {
             throw new MetadataStoreException(t);
