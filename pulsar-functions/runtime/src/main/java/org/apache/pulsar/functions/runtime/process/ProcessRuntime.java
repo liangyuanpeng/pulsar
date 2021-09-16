@@ -358,6 +358,7 @@ class ProcessRuntime implements Runtime {
     private void startProcess() {
         deathException = null;
         try {
+            log.info("lan.startProcess.processArgs:{}",processArgs);
             ProcessBuilder processBuilder = new ProcessBuilder(processArgs).inheritIO();
             if (StringUtils.isNotEmpty(extraDependenciesDir)) {
                 processBuilder.environment().put("PYTHONPATH", "${PYTHONPATH}:" + extraDependenciesDir);

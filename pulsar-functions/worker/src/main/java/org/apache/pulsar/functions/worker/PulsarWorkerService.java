@@ -462,6 +462,8 @@ public class PulsarWorkerService implements WorkerService {
 
             //create membership manager
             String coordinationTopic = workerConfig.getClusterCoordinationTopic();
+            log.info("lan.create.coordinationTopic.and.buildin.subscription:{}",coordinationTopic,MembershipManager.COORDINATION_TOPIC_SUBSCRIPTION);
+            //lan初始化协作topic和subscription
             if (!getBrokerAdmin().topics().getSubscriptions(coordinationTopic).contains(MembershipManager.COORDINATION_TOPIC_SUBSCRIPTION)) {
                 getBrokerAdmin().topics()
                         .createSubscription(coordinationTopic, MembershipManager.COORDINATION_TOPIC_SUBSCRIPTION,

@@ -209,6 +209,7 @@ public class FunctionRuntimeManager implements AutoCloseable{
             }
         }
         // initialize runtime
+        //lan初始化function worker,默认是org.apache.pulsar.functions.runtime.process.ProcessRuntimeFactory
         this.runtimeFactory.initialize(workerConfig, authConfig,
                 secretsProviderConfigurator, connectorsManager,
                 functionAuthProvider, runtimeCustomizer);

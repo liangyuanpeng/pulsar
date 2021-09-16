@@ -1,0 +1,112 @@
+<!--
+### Contribution Checklist
+
+  - Name the pull request in the form "[Issue XYZ][component] Title of the pull request", where *XYZ* should be replaced by the actual issue number.
+    Skip *Issue XYZ* if there is no associated github issue for this pull request.
+    Skip *component* if you are unsure about which is the best component. E.g. `[docs] Fix typo in produce method`.
+
+  - Fill out the template below to describe the changes contributed by the pull request. That will give reviewers the context they need to do the review.
+
+  - Each pull request should address only one issue, not mix up code from multiple issues.
+
+  - Each commit in the pull request has a meaningful commit message
+
+  - Once all items of the checklist are addressed, remove the above text and this checklist, leaving only the filled out template below.
+
+**(The sections below can be removed for hotfixes of typos)**
+-->
+
+Fixes #12046
+
+### Motivation
+
+Don't know what is mean when Got the error `No value persent`
+
+```
+java.util.NoSuchElementException: No value present
+	at java.util.Optional.get(Optional.java:135) ~[?:1.8.0_292]
+	at org.apache.pulsar.PulsarStandalone.start(PulsarStandalone.java:316) ~[org.apache.pulsar-pulsar-broker-2.8.0.jar:2.8.0]
+	at org.apache.pulsar.PulsarStandaloneStarter.main(PulsarStandaloneStarter.java:121) [org.apache.pulsar-pulsar-broker-2.8.0.jar:2.8.0]
+...
+```
+
+I'm not sure if this is worth modifying, Because the `tlsEnabled`  marked `@Deprecated`, But there are still a few places that are currently used, so I submitted this PR.
+
+After you can get the clean log when use `tlsEnabled=true` and not set `WebServicePortTls` or `BrokerServicePorts`, like
+
+```
+16:54:18.029 [main] ERROR org.apache.pulsar.broker.PulsarService - Failed to start Pulsar service: webServicePortTls/brokerServicePortTls must be present
+java.lang.IllegalArgumentException: webServicePortTls/brokerServicePortTls must be present
+	at org.apache.pulsar.broker.PulsarService.start(PulsarService.java:614) [classes/:?]
+	at org.apache.pulsar.PulsarStandalone.start(PulsarStandalone.java:296) [classes/:?]
+	at org.apache.pulsar.PulsarStandaloneStarter.main(PulsarStandaloneStarter.java:131) [classes/:?]
+16:54:18.058 [main] ERROR org.apache.pulsar.PulsarStandaloneStarter - Failed to start pulsar service.
+org.apache.pulsar.broker.PulsarServerException: java.lang.IllegalArgumentException: webServicePortTls/brokerServicePortTls must be present
+	at org.apache.pulsar.broker.PulsarService.start(PulsarService.java:801) ~[classes/:?]
+	at org.apache.pulsar.PulsarStandalone.start(PulsarStandalone.java:296) ~[classes/:?]
+	at org.apache.pulsar.PulsarStandaloneStarter.main(PulsarStandaloneStarter.java:131) [classes/:?]
+Caused by: java.lang.IllegalArgumentException: webServicePortTls/brokerServicePortTls must be present
+	at org.apache.pulsar.broker.PulsarService.start(PulsarService.java:614) ~[classes/:?]
+	... 2 more
+Disconnected from the target VM, address: '127.0.0.1:42089', transport: 'socket'
+
+Process finished with exit code 1
+
+```
+
+### Modifications
+
+*Describe the modifications you've done.*
+
+### Verifying this change
+
+- [ ] Make sure that the change passes the CI checks.
+
+*(Please pick either of the following options)*
+
+This change is a trivial rework / code cleanup without any test coverage.
+
+*(or)*
+
+This change is already covered by existing tests, such as *(please describe tests)*.
+
+*(or)*
+
+This change added tests and can be verified as follows:
+
+*(example:)*
+  - *Added integration tests for end-to-end deployment with large payloads (10MB)*
+  - *Extended integration test for recovery after broker failure*
+
+### Does this pull request potentially affect one of the following parts:
+
+*If `yes` was chosen, please highlight the changes*
+
+  - Dependencies (does it add or upgrade a dependency): (yes / no)
+  - The public API: (yes / no)
+  - The schema: (yes / no / don't know)
+  - The default values of configurations: (yes / no)
+  - The wire protocol: (yes / no)
+  - The rest endpoints: (yes / no)
+  - The admin cli options: (yes / no)
+  - Anything that affects deployment: (yes / no / don't know)
+
+### Documentation
+
+Check the box below and label this PR (if you have committer privilege).
+
+Need to update docs?
+
+- [ ] doc-required
+
+  (If you need help on updating docs, create a doc issue)
+
+- [ ] no-need-doc
+
+  (Please explain why)
+
+- [ ] doc
+
+  (If this PR contains doc changes)
+
+
