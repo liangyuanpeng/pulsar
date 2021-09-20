@@ -37,6 +37,7 @@ public class PulsarStandaloneStarter extends PulsarStandalone {
     private static final Logger log = LoggerFactory.getLogger(PulsarStandaloneStarter.class);
 
     public PulsarStandaloneStarter(String[] args) throws Exception {
+        //-Dlog4j.configurationFile=log4j2.yaml
 
         JCommander jcommander = new JCommander();
         try {
