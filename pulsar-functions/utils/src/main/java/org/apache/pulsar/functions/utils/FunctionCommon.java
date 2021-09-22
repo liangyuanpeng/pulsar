@@ -112,6 +112,7 @@ public class FunctionCommon {
                 typeArgs[0] = (Class<?>) actualInputType;
             }
         } else {
+
             if (Function.class.isAssignableFrom(userClass)) {
                 typeArgs = TypeResolver.resolveRawArguments(Function.class, userClass);
             } else {

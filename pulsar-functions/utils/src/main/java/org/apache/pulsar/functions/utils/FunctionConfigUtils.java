@@ -518,10 +518,17 @@ public class FunctionConfigUtils {
                         String.format("Function class %s does not implement the correct interface",
                                 functionClass.getName()));
             }
+
+            if(org.apache.pulsar.functions.api.WindowFunction.class.isAssignableFrom(functionClass) && functionConfig.getWindowConfig() == null){
+                throw new IllegalArgumentException(
+                        "WindowConfig of window function must be not empty!");
+            }
+
         } catch (ClassNotFoundException | NoClassDefFoundError e) {
             throw new IllegalArgumentException(
                     String.format("Function class %s must be in class path", functionConfig.getClassName()), e);
         }
+
 
         Class<?>[] typeArgs;
         try {
