@@ -118,7 +118,7 @@ exposeAdminClientEnabled: false
 #functionRuntimeFactoryClassName: org.apache.pulsar.functions.runtime.process.ProcessRuntimeFactory
 functionRuntimeFactoryClassName: org.apache.pulsar.functions.runtime.thread.ThreadRuntimeFactory
 functionRuntimeFactoryConfigs:
-    threadGroupName: "smartoilets.function"
+    threadGroupName: "lan.dev.functions"
     # location of log files for functions
     logDirectory: logs/
     # change the jar location only when you put the java instance jar in a different location
