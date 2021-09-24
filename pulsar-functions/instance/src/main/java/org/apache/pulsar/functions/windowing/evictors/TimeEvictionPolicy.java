@@ -52,6 +52,7 @@ public class TimeEvictionPolicy<T> implements EvictionPolicy<T, EvictionContext>
                 evictionContext == null ? System.currentTimeMillis() : evictionContext.getReferenceTime();
         long diff = now - event.getTimestamp();
         if (diff >= (windowLength + delta)) {
+            log.info("topic.event.expire:\ndiff:{}|\nwindowLength:{}|\ndelta:{}|\ntopic:{}|\nvalue:{}",diff,windowLength,delta,event.getRecord().getTopicName().get(),event.getRecord().getMessage().get().getValue());
             return EvictionPolicy.Action.EXPIRE;
         } else if (diff < 0) { // do not process events beyond current ts
             return Action.KEEP;

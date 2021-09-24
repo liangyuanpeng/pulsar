@@ -35,9 +35,11 @@ public class LoggingWindowFunction implements WindowFunction<String, Void> {
     @Override
     public Void process(Collection<Record<String>> inputs, WindowContext context) throws Exception {
         Logger log = context.getLogger();
+        log.info("=====================================begin.window.function.process=====================================");
         for (Record<String> record : inputs) {
-            log.info(record.getTopicName().get()+ "-window-log");
+            log.info(record.getTopicName().get()+"|"+record.getMessage().get().getValue()+"-window-log");
         }
+        log.info("=====================================done.window.function.process=====================================");
         return null;
     }
 }

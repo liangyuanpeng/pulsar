@@ -23,8 +23,11 @@ import com.google.gson.Gson;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
@@ -215,12 +218,39 @@ public class WindowFunctionExecutor<I, O> implements Function<I, O> {
             @Override
             public void onActivation(List<Event<Record<I>>> tuples, List<Event<Record<I>>> newTuples, List<Event<Record<I>>>
                     expiredTuples, Long referenceTime) {
-                processWindow(
-                        context,
-                        tuples.stream().map(event -> event.get()).collect(Collectors.toList()),
-                        newTuples.stream().map(event -> event.get()).collect(Collectors.toList()),
-                        expiredTuples.stream().map(event -> event.get()).collect(Collectors.toList()),
-                        referenceTime);
+                Map<Optional<String>, List<Record<I>>> tuplesCollect =
+                        tuples.stream().map(event -> event.get()).collect(Collectors.groupingBy(Record::getTopicName));
+
+                Map<Optional<String>, List<Record<I>>> newTuplesCollect = newTuples.stream().map(event -> event.get())
+                        .collect(Collectors.groupingBy(Record::getTopicName));
+
+                Map<Optional<String>, List<Record<I>>> expiredTuplesCollect = expiredTuples.stream().map(event -> event.get())
+                        .collect(Collectors.groupingBy(Record::getTopicName));
+
+                //lan.dev 分topic跑window  应该还要把这个逻辑写在上层 因为已经有eventList判断是否为empty的逻辑了
+                //TODO 还要继续弄清楚 evictionPolicy.getContext().getReferenceTime()的作用 如果分成topic级别跑window 会不会有影响
+                for (Map.Entry<Optional<String>, List<Record<I>>> entry : tuplesCollect.entrySet()) {
+                    String topic = entry.getKey().get();
+
+                    if(entry.getValue().isEmpty()){
+                        continue;
+                    }
+                    processWindow(
+                            context,
+                            entry.getValue(),
+                            newTuplesCollect.getOrDefault(topic, Collections.emptyList()),
+                            expiredTuplesCollect.getOrDefault(topic, Collections.emptyList()),
+                            referenceTime);
+                }
+
+
+//                processWindow(
+//                        context,
+//                        tuples.stream().map(event -> event.get()).collect(Collectors.toList()),
+//                        newTuples.stream().map(event -> event.get()).collect(Collectors.toList()),
+//                        expiredTuples.stream().map(event -> event.get()).collect(Collectors.toList()),
+//                        referenceTime);
+
             }
         };
     }
