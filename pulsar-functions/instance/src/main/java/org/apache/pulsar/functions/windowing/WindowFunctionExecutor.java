@@ -230,6 +230,7 @@ public class WindowFunctionExecutor<I, O> implements Function<I, O> {
 
         O output = null;
         try {
+
             output = this.process(
                     new WindowImpl<>(tuples, newTuples, expiredTuples, getWindowStartTs(referenceTime), referenceTime),
                     new WindowContextImpl(context));

@@ -36,7 +36,7 @@ public class LoggingWindowFunction implements WindowFunction<String, Void> {
     public Void process(Collection<Record<String>> inputs, WindowContext context) throws Exception {
         Logger log = context.getLogger();
         for (Record<String> record : inputs) {
-            log.info(record + "-window-log");
+            log.info(record.getTopicName().get()+ "-window-log");
         }
         return null;
     }
