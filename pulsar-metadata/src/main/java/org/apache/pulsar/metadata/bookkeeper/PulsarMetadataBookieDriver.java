@@ -34,6 +34,7 @@ public class PulsarMetadataBookieDriver extends AbstractMetadataDriver implement
         MetadataDrivers.registerBookieDriver(METADATA_STORE_SCHEME, PulsarMetadataBookieDriver.class);
     }
 
+
     @Override
     public MetadataBookieDriver initialize(ServerConfiguration serverConfiguration,
                                            RegistrationManager.RegistrationListener registrationListener,

@@ -244,6 +244,10 @@ public class LocalBookkeeperEnsemble {
             .orElse(null);
     }
 
+    private void initializeRocksDB(){
+
+    }
+
     private void initializeZookeper() throws IOException {
         LOG.info("Instantiate ZK Client");
         // initialize the zk client with values
@@ -419,7 +423,8 @@ public class LocalBookkeeperEnsemble {
         conf.setNumLongPollWorkerThreads(1);
         conf.setAllocatorPoolingPolicy(PoolingPolicy.UnpooledHeap);
 
-        runZookeeper(1000);
+        //lan.dev 不启动嵌入式ZK
+//        runZookeeper(1000);
         initializeZookeper();
         runBookies(conf);
 
@@ -440,8 +445,9 @@ public class LocalBookkeeperEnsemble {
         LOG.debug("Local ZK/BK starting ...");
         conf.setAdvertisedAddress(advertisedAddress);
 
-        runZookeeper(1000);
-        initializeZookeper();
+        //lan.dev 不启动嵌入式ZK
+//        runZookeeper(1000);
+//        initializeZookeper();
         runBookies(conf);
         if (enableStreamStorage) {
             runStreamStorage(new CompositeConfiguration());

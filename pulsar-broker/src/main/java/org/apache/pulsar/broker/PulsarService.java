@@ -672,6 +672,7 @@ public class PulsarService implements AutoCloseable, ShutdownService {
             this.addWebServerHandlers(webService, metricsServlet, this.config);
             this.webService.start();
 
+
             // Refresh addresses and update configuration, since the port might have been dynamically assigned
             if (config.getBrokerServicePort().equals(Optional.of(0))) {
                 config.setBrokerServicePort(brokerService.getListenPort());
