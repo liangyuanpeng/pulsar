@@ -579,7 +579,10 @@ jobs:
       - name: save docker image apachepulsar/pulsar-test-latest-version:latest to Github artifact cache
         if: ${{ needs.changed_files_job.outputs.docs_only != 'true' }}
         run: |
+          docker images
           $GITHUB_WORKSPACE/build/pulsar_ci_tool.sh docker_save_image_to_github_actions_artifacts apachepulsar/pulsar-test-latest-version:latest pulsar-test-latest-version-image
+          docker tag apachepulsar/pulsar-test-latest-version:latest pulsar-sigs/pulsar:latest
+          docker images
 
       - name: Wait for ssh connection when build fails
         # ssh access is enabled for builds in own forks
