@@ -18,6 +18,7 @@
  */
 package org.apache.pulsar.transaction.coordinator.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import java.time.Duration;
@@ -39,6 +40,7 @@ import org.apache.pulsar.client.api.transaction.TxnID;
 import org.apache.pulsar.common.api.proto.Subscription;
 import org.apache.pulsar.common.policies.data.TransactionCoordinatorStats;
 import org.apache.pulsar.common.util.FutureUtil;
+import org.apache.pulsar.common.util.RecoverTimeRecord;
 import org.apache.pulsar.transaction.coordinator.TransactionCoordinatorID;
 import org.apache.pulsar.transaction.coordinator.TransactionLogReplayCallback;
 import org.apache.pulsar.transaction.coordinator.TransactionMetadataStore;
@@ -66,7 +68,8 @@ public class MLTransactionMetadataStore
 
     private final TransactionCoordinatorID tcID;
     private final MLTransactionLogImpl transactionLog;
-    private final ConcurrentSkipListMap<Long, Pair<TxnMeta, List<Position>>> txnMetaMap = new ConcurrentSkipListMap<>();
+    @VisibleForTesting
+    final ConcurrentSkipListMap<Long, Pair<TxnMeta, List<Position>>> txnMetaMap = new ConcurrentSkipListMap<>();
     private final TransactionTimeoutTracker timeoutTracker;
     private final TransactionMetadataStoreStats transactionMetadataStoreStats;
     private final LongAdder createdTransactionCount;
@@ -76,6 +79,7 @@ public class MLTransactionMetadataStore
     private final LongAdder appendLogCount;
     private final MLTransactionSequenceIdGenerator sequenceIdGenerator;
     private final ExecutorService internalPinnedExecutor;
+    public final RecoverTimeRecord recoverTime = new RecoverTimeRecord();
     private final long maxActiveTransactionsPerCoordinator;
 
     public MLTransactionMetadataStore(TransactionCoordinatorID tcID,
@@ -110,8 +114,8 @@ public class MLTransactionMetadataStore
                     .CoordinatorNotFoundException("transaction metadata store with tcId "
                             + tcID.toString() + " change state to Initializing error when init it"));
         } else {
+            recoverTime.setRecoverStartTime(System.currentTimeMillis());
             internalPinnedExecutor.execute(() -> transactionLog.replayAsync(new TransactionLogReplayCallback() {
-
                 @Override
                 public void replayComplete() {
                     recoverTracker.appendOpenTransactionToTimeoutTracker();
@@ -126,6 +130,7 @@ public class MLTransactionMetadataStore
                         recoverTracker.handleCommittingAndAbortingTransaction();
                         timeoutTracker.start();
                         completableFuture.complete(MLTransactionMetadataStore.this);
+                        recoverTime.setRecoverEndTime(System.currentTimeMillis());
                     }
                 }
 
@@ -446,6 +451,8 @@ public class MLTransactionMetadataStore
         transactionCoordinatorstats.setState(getState().name());
         transactionCoordinatorstats.setLeastSigBits(sequenceIdGenerator.getCurrentSequenceId());
         transactionCoordinatorstats.ongoingTxnSize = txnMetaMap.size();
+        transactionCoordinatorstats.recoverStartTime = recoverTime.getRecoverStartTime();
+        transactionCoordinatorstats.recoverEndTime = recoverTime.getRecoverEndTime();
         return transactionCoordinatorstats;
     }
 

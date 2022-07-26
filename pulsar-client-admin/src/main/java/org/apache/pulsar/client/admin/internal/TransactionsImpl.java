@@ -39,6 +39,7 @@ import org.apache.pulsar.common.policies.data.TransactionInPendingAckStats;
 import org.apache.pulsar.common.policies.data.TransactionMetadata;
 import org.apache.pulsar.common.policies.data.TransactionPendingAckInternalStats;
 import org.apache.pulsar.common.policies.data.TransactionPendingAckStats;
+import org.apache.pulsar.common.stats.PositionInPendingAckStats;
 
 public class TransactionsImpl extends BaseResource implements Transactions {
     private final WebTarget adminV3Transactions;
@@ -357,4 +358,40 @@ public class TransactionsImpl extends BaseResource implements Transactions {
         return asyncPostRequest(path, Entity.entity(replicas, MediaType.APPLICATION_JSON));
     }
 
+    @Override
+    public CompletableFuture<PositionInPendingAckStats> getPositionStatsInPendingAckAsync(String topic,
+                                                                                          String subName,
+                                                                                          Long ledgerId,
+                                                                                          Long entryId,
+                                                                                          Integer batchIndex) {
+        TopicName tn = TopicName.get(topic);
+        WebTarget path = adminV3Transactions.path("positionStatsInPendingAck");
+        path = path.path(tn.getRestPath(false));
+        path = path.path(subName);
+        path = path.path(ledgerId.toString());
+        path = path.path(entryId.toString());
+        path = path.queryParam("batchIndex", batchIndex);
+        final CompletableFuture<PositionInPendingAckStats> future = new CompletableFuture<>();
+        asyncGetRequest(path,
+                new InvocationCallback<PositionInPendingAckStats>() {
+                    @Override
+                    public void completed(PositionInPendingAckStats stats) {
+                        future.complete(stats);
+                    }
+
+                    @Override
+                    public void failed(Throwable throwable) {
+                        future.completeExceptionally(getApiException(throwable.getCause()));
+                    }
+                });
+        return future;
+    }
+
+
+    @Override
+    public PositionInPendingAckStats getPositionStatsInPendingAck(String topic, String subName, Long ledgerId,
+                                                                  Long entryId, Integer batchIndex)
+            throws PulsarAdminException {
+        return sync(() -> getPositionStatsInPendingAckAsync(topic, subName, ledgerId, entryId, batchIndex));
+    }
 }

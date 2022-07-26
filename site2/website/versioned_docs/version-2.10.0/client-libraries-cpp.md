@@ -271,6 +271,7 @@ $ brew install protobuf boost boost-python log4cxx
 # Google Test installation
 $ git clone https://github.com/google/googletest.git
 $ cd googletest
+$ git checkout release-1.12.1
 $ cmake .
 $ make install
 
@@ -658,7 +659,7 @@ For complete examples, refer to [C++ client examples](https://github.com/apache/
 ## Schema
 
 This section describes some examples about schema. For more information about
-schema, see [Pulsar schema](schema-get-started).
+schema, see [Pulsar schema](schema-get-started.md).
 
 ### Avro schema
 

@@ -639,8 +639,11 @@ public class PersistentTopicsTest extends MockedPulsarServiceBaseTest {
         // 2) create non partitioned topic and unload
         response = mock(AsyncResponse.class);
         persistentTopics.createNonPartitionedTopic(response, testTenant, testNamespace, topicName, true, null);
-        persistentTopics.unloadTopic(response, testTenant, testNamespace, topicName, true);
         ArgumentCaptor<Response> responseCaptor = ArgumentCaptor.forClass(Response.class);
+        verify(response, timeout(5000).times(1)).resume(responseCaptor.capture());
+        Assert.assertEquals(responseCaptor.getValue().getStatus(), Response.Status.NO_CONTENT.getStatusCode());
+        persistentTopics.unloadTopic(response, testTenant, testNamespace, topicName, true);
+        responseCaptor = ArgumentCaptor.forClass(Response.class);
         verify(response, timeout(5000).times(1)).resume(responseCaptor.capture());
         Assert.assertEquals(responseCaptor.getValue().getStatus(), Response.Status.NO_CONTENT.getStatusCode());
 
@@ -1445,6 +1448,7 @@ public class PersistentTopicsTest extends MockedPulsarServiceBaseTest {
         doReturn(brokerService).when(pulsar).getBrokerService();
         CompletableFuture<Optional<Topic>> completableFuture = new CompletableFuture<>();
         doReturn(completableFuture).when(brokerService).getTopicIfExists(topic);
+        completableFuture.completeExceptionally(new RuntimeException("TimeoutException"));
         try {
             admin.topics().resetCursor(topic, "my-sub", System.currentTimeMillis());
             Assert.fail();
