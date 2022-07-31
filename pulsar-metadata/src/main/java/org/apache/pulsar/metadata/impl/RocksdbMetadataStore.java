@@ -20,6 +20,16 @@
 package org.apache.pulsar.metadata.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.pulsar.common.stats.Metrics;
+import org.apache.pulsar.common.util.FutureUtil;
+import org.apache.pulsar.metadata.api.*;
+import org.apache.pulsar.metadata.api.extended.CreateOption;
+import org.rocksdb.*;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -28,46 +38,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.pulsar.common.util.FutureUtil;
-import org.apache.pulsar.metadata.api.GetResult;
-import org.apache.pulsar.metadata.api.MetadataStoreConfig;
-import org.apache.pulsar.metadata.api.MetadataStoreException;
-import org.apache.pulsar.metadata.api.Notification;
-import org.apache.pulsar.metadata.api.NotificationType;
-import org.apache.pulsar.metadata.api.Stat;
-import org.apache.pulsar.metadata.api.extended.CreateOption;
-import org.rocksdb.ColumnFamilyDescriptor;
-import org.rocksdb.ColumnFamilyHandle;
-import org.rocksdb.ConfigOptions;
-import org.rocksdb.DBOptions;
-import org.rocksdb.InfoLogLevel;
-import org.rocksdb.Options;
-import org.rocksdb.OptionsUtil;
-import org.rocksdb.ReadOptions;
-import org.rocksdb.RocksDB;
-import org.rocksdb.RocksDBException;
-import org.rocksdb.RocksIterator;
-import org.rocksdb.Transaction;
-import org.rocksdb.TransactionDB;
-import org.rocksdb.TransactionDBOptions;
-import org.rocksdb.WriteOptions;
 
 /**
  *
@@ -91,6 +67,11 @@ public class RocksdbMetadataStore extends AbstractMetadataStore {
     private final WriteOptions optionDontSync;
     private final ReadOptions optionCache;
     private final ReadOptions optionDontCache;
+
+    @Override
+    public List<Metrics> getMetrics() {
+        return Collections.emptyList();
+    }
 
     enum State {
         RUNNING, CLOSED
@@ -218,7 +199,8 @@ public class RocksdbMetadataStore extends AbstractMetadataStore {
             throw new MetadataStoreException("Failed to load RocksDB JNI library", t);
         }
 
-        String dataDir = metadataURL.substring("rocksdb:".length());
+        String dataDir = metadataURL.substring("rocksdb://".length());
+//        dataDir = dataDir.substring("rocksdb:".length());
         Path dataPath = FileSystems.getDefault().getPath(dataDir);
         try {
             Files.createDirectories(dataPath);
@@ -226,6 +208,8 @@ public class RocksdbMetadataStore extends AbstractMetadataStore {
             Files.setPosixFilePermissions(dataPath, perms);
         } catch (IOException e) {
             throw new MetadataStoreException("Fail to create RocksDB file directory", e);
+        }catch (UnsupportedOperationException e1){
+            log.info("unsupportedOperationException");
         }
 
         db = openDB(dataPath.toString(), metadataStoreConfig.getConfigFilePath());
@@ -273,8 +257,13 @@ public class RocksdbMetadataStore extends AbstractMetadataStore {
 
     private TransactionDB openDB(String dataPath, String configFilePath) throws MetadataStoreException {
         try (TransactionDBOptions transactionDBOptions = new TransactionDBOptions()) {
+
+            Statistics statistics = new Statistics();
+            statistics.setStatsLevel(StatsLevel.ALL);
+
             if (configFilePath != null) {
                 DBOptions dbOptions = new DBOptions();
+                dbOptions.setStatistics(statistics);
                 ConfigOptions configOptions = new ConfigOptions();
                 List<ColumnFamilyDescriptor> cfDescriptors = new ArrayList<>();
                 OptionsUtil.loadOptionsFromFile(configOptions, configFilePath, dbOptions, cfDescriptors);
@@ -294,6 +283,7 @@ public class RocksdbMetadataStore extends AbstractMetadataStore {
                 }
             } else {
                 Options options = new Options();
+                options.setStatistics(statistics);
                 options.setCreateIfMissing(true);
                 configLog(options);
                 try {
@@ -381,6 +371,7 @@ public class RocksdbMetadataStore extends AbstractMetadataStore {
         if (log.isDebugEnabled()) {
             log.debug("getFromStore.path={},instanceId={}", path, instanceId);
         }
+        log.info("getFromStore.path={},instanceId={}", path, instanceId);
         try {
             dbStateLock.readLock().lock();
             if (state == State.CLOSED) {

@@ -18,15 +18,9 @@
  */
 package org.apache.pulsar;
 
-import static org.apache.pulsar.common.naming.NamespaceName.SYSTEM_NAMESPACE;
-import static org.apache.pulsar.common.naming.SystemTopicNames.TRANSACTION_COORDINATOR_ASSIGN;
 import com.beust.jcommander.Parameter;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
-import java.io.File;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.bookkeeper.conf.ServerConfiguration;
 import org.apache.commons.lang3.StringUtils;
@@ -51,6 +45,14 @@ import org.apache.pulsar.metadata.bookkeeper.BKCluster;
 import org.apache.pulsar.metadata.impl.ZKMetadataStore;
 import org.apache.pulsar.packages.management.storage.filesystem.FileSystemPackagesStorageProvider;
 import org.apache.pulsar.zookeeper.LocalBookkeeperEnsemble;
+
+import java.io.File;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Optional;
+
+import static org.apache.pulsar.common.naming.NamespaceName.SYSTEM_NAMESPACE;
+import static org.apache.pulsar.common.naming.SystemTopicNames.TRANSACTION_COORDINATOR_ASSIGN;
 
 @Slf4j
 public class PulsarStandalone implements AutoCloseable {
@@ -265,6 +267,10 @@ public class PulsarStandalone implements AutoCloseable {
 
     private boolean usingNewDefaultsPIP117;
 
+    @Parameter(names = { "--metadata-url" },
+            description = "Url for storing metadata")
+    private String metadataUrl = null;
+
     public void start() throws Exception {
         String forceUseZookeeperEnv = System.getenv(PULSAR_STANDALONE_USE_ZOOKEEPER);
 
@@ -288,11 +294,16 @@ public class PulsarStandalone implements AutoCloseable {
 
         log.debug("--- setup PulsarStandaloneStarter ---");
 
-        if (!this.isOnlyBroker()) {
+         if (!this.isOnlyBroker()) {
             if (usingNewDefaultsPIP117) {
                 startBookieWithRocksDB();
+//                startBookieWithMetadataUrl();
             } else {
-                startBookieWithZookeeper();
+                if(StringUtils.isNotBlank(metadataUrl)){
+                    startBookieWithMetadataUrl(metadataUrl);
+                }else {
+                    startBookieWithZookeeper();
+                }
             }
         }
 
@@ -433,19 +444,23 @@ public class PulsarStandalone implements AutoCloseable {
             log.error("Shutdown failed: {}", e.getMessage(), e);
         }
     }
-
-
-    private void startBookieWithRocksDB() throws Exception {
-        log.info("Starting BK with RocksDb metadata store");
-        String metadataStoreUrl = "rocksdb://" + Paths.get(metadataDir).toAbsolutePath();
+    private void startBookieWithMetadataUrl(String metadataUrl) throws Exception {
+        log.info("Starting BK with metadataUrl");
         bkCluster = BKCluster.builder()
-                .metadataServiceUri(metadataStoreUrl)
+                .metadataServiceUri(metadataUrl)
                 .bkPort(bkPort)
                 .numBookies(numOfBk)
                 .dataDir(bkDir)
                 .build();
         config.setBookkeeperNumberOfChannelsPerBookie(1);
-        config.setMetadataStoreUrl(metadataStoreUrl);
+        config.setMetadataStoreUrl(metadataUrl);
+    }
+
+    private void startBookieWithRocksDB() throws Exception {
+        log.info("Starting BK with RocksDb metadata store");
+        String metadataStoreUrl = "rocksdb://" + Paths.get(metadataDir).toAbsolutePath();
+        metadataStoreUrl = metadataStoreUrl.replaceAll("\\\\","/");
+        startBookieWithMetadataUrl(metadataStoreUrl);
     }
 
     private void startBookieWithZookeeper() throws Exception {

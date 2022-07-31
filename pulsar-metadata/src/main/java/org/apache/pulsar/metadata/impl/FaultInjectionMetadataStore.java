@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import lombok.Data;
+import org.apache.pulsar.common.stats.Metrics;
 import org.apache.pulsar.common.util.FutureUtil;
 import org.apache.pulsar.metadata.api.GetResult;
 import org.apache.pulsar.metadata.api.MetadataCache;
@@ -158,6 +159,11 @@ public class FaultInjectionMetadataStore implements MetadataStoreExtended {
     @Override
     public <T> MetadataCache<T> getMetadataCache(MetadataSerde<T> serde) {
         return store.getMetadataCache(serde);
+    }
+
+    @Override
+    public List<Metrics> getMetrics() {
+        return null;
     }
 
     @Override

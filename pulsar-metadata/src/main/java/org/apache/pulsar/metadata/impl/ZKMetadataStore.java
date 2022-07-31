@@ -19,6 +19,22 @@
 package org.apache.pulsar.metadata.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.bookkeeper.zookeeper.BoundExponentialBackoffRetryPolicy;
+import org.apache.pulsar.common.stats.Metrics;
+import org.apache.pulsar.common.util.FutureUtil;
+import org.apache.pulsar.metadata.api.*;
+import org.apache.pulsar.metadata.api.MetadataStoreException.AlreadyExistsException;
+import org.apache.pulsar.metadata.api.MetadataStoreException.BadVersionException;
+import org.apache.pulsar.metadata.api.MetadataStoreException.NotFoundException;
+import org.apache.pulsar.metadata.api.extended.CreateOption;
+import org.apache.pulsar.metadata.api.extended.MetadataStoreExtended;
+import org.apache.pulsar.metadata.api.extended.SessionEvent;
+import org.apache.pulsar.metadata.impl.batching.*;
+import org.apache.zookeeper.*;
+import org.apache.zookeeper.KeeperException.Code;
+
 import java.io.File;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -29,40 +45,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.bookkeeper.zookeeper.BoundExponentialBackoffRetryPolicy;
-import org.apache.pulsar.common.util.FutureUtil;
-import org.apache.pulsar.metadata.api.GetResult;
-import org.apache.pulsar.metadata.api.MetadataStoreConfig;
-import org.apache.pulsar.metadata.api.MetadataStoreException;
-import org.apache.pulsar.metadata.api.MetadataStoreException.AlreadyExistsException;
-import org.apache.pulsar.metadata.api.MetadataStoreException.BadVersionException;
-import org.apache.pulsar.metadata.api.MetadataStoreException.NotFoundException;
-import org.apache.pulsar.metadata.api.MetadataStoreLifecycle;
-import org.apache.pulsar.metadata.api.Notification;
-import org.apache.pulsar.metadata.api.NotificationType;
-import org.apache.pulsar.metadata.api.Stat;
-import org.apache.pulsar.metadata.api.extended.CreateOption;
-import org.apache.pulsar.metadata.api.extended.MetadataStoreExtended;
-import org.apache.pulsar.metadata.api.extended.SessionEvent;
-import org.apache.pulsar.metadata.impl.batching.AbstractBatchedMetadataStore;
-import org.apache.pulsar.metadata.impl.batching.MetadataOp;
-import org.apache.pulsar.metadata.impl.batching.OpDelete;
-import org.apache.pulsar.metadata.impl.batching.OpGet;
-import org.apache.pulsar.metadata.impl.batching.OpGetChildren;
-import org.apache.pulsar.metadata.impl.batching.OpPut;
-import org.apache.zookeeper.AddWatchMode;
-import org.apache.zookeeper.AsyncCallback;
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.KeeperException.Code;
-import org.apache.zookeeper.Op;
-import org.apache.zookeeper.OpResult;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooDefs;
-import org.apache.zookeeper.ZooKeeper;
 
 @Slf4j
 public class ZKMetadataStore extends AbstractBatchedMetadataStore
@@ -573,5 +555,10 @@ public class ZKMetadataStore extends AbstractBatchedMetadataStore
         if (rc.get() != Code.OK.intValue()) {
             throw KeeperException.create(Code.get(rc.get()));
         }
+    }
+
+    @Override
+    public List<Metrics> getMetrics() {
+        return Collections.emptyList();
     }
 }

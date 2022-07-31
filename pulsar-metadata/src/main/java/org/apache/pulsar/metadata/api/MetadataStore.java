@@ -20,12 +20,14 @@ package org.apache.pulsar.metadata.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.Beta;
+import org.apache.pulsar.common.stats.Metrics;
+import org.apache.pulsar.metadata.api.MetadataStoreException.BadVersionException;
+import org.apache.pulsar.metadata.api.MetadataStoreException.NotFoundException;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-import org.apache.pulsar.metadata.api.MetadataStoreException.BadVersionException;
-import org.apache.pulsar.metadata.api.MetadataStoreException.NotFoundException;
 
 /**
  * Metadata store client interface.
@@ -159,4 +161,6 @@ public interface MetadataStore extends AutoCloseable {
      * @return the metadata cache object
      */
     <T> MetadataCache<T> getMetadataCache(MetadataSerde<T> serde);
+
+    List<Metrics> getMetrics();
 }
