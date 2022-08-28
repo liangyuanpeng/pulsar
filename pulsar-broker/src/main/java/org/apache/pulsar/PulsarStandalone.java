@@ -18,15 +18,9 @@
  */
 package org.apache.pulsar;
 
-import static org.apache.pulsar.common.naming.NamespaceName.SYSTEM_NAMESPACE;
-import static org.apache.pulsar.common.naming.SystemTopicNames.TRANSACTION_COORDINATOR_ASSIGN;
 import com.beust.jcommander.Parameter;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
-import java.io.File;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.bookkeeper.conf.ServerConfiguration;
 import org.apache.commons.lang3.StringUtils;
@@ -51,6 +45,14 @@ import org.apache.pulsar.metadata.bookkeeper.BKCluster;
 import org.apache.pulsar.metadata.impl.ZKMetadataStore;
 import org.apache.pulsar.packages.management.storage.filesystem.FileSystemPackagesStorageProvider;
 import org.apache.pulsar.zookeeper.LocalBookkeeperEnsemble;
+
+import java.io.File;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Optional;
+
+import static org.apache.pulsar.common.naming.NamespaceName.SYSTEM_NAMESPACE;
+import static org.apache.pulsar.common.naming.SystemTopicNames.TRANSACTION_COORDINATOR_ASSIGN;
 
 @Slf4j
 public class PulsarStandalone implements AutoCloseable {
@@ -437,7 +439,8 @@ public class PulsarStandalone implements AutoCloseable {
 
     private void startBookieWithRocksDB() throws Exception {
         log.info("Starting BK with RocksDb metadata store");
-        String metadataStoreUrl = "rocksdb://" + Paths.get(metadataDir).toAbsolutePath();
+        String metadataStoreUrl = "rocksdb:" + Paths.get(metadataDir).toAbsolutePath();
+        metadataStoreUrl = "rocksdb:H:/repo/git/pulsar/data";
         bkCluster = BKCluster.builder()
                 .metadataServiceUri(metadataStoreUrl)
                 .bkPort(bkPort)

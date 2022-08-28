@@ -59,15 +59,12 @@ message ManagedLedgerInfo {
         optional int64 timestamp = 4;
         optional OffloadContext offloadContext = 5;
     }
-
   repeated LedgerInfo ledgerInfo = 1;
-
     // If present, it signals the managed ledger has been
     // terminated and this was the position of the last
     // committed entry.
     // No more entries can be written.
     optional NestedPositionInfo terminatedPosition = 2;
-
     repeated KeyValue properties = 3;
 }
 

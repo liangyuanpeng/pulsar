@@ -20,6 +20,15 @@
 package org.apache.pulsar.metadata.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.pulsar.common.util.FutureUtil;
+import org.apache.pulsar.metadata.api.*;
+import org.apache.pulsar.metadata.api.extended.CreateOption;
+import org.rocksdb.*;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -28,47 +37,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.pulsar.common.util.FutureUtil;
-import org.apache.pulsar.metadata.api.GetResult;
-import org.apache.pulsar.metadata.api.MetadataEventSynchronizer;
-import org.apache.pulsar.metadata.api.MetadataStoreConfig;
-import org.apache.pulsar.metadata.api.MetadataStoreException;
-import org.apache.pulsar.metadata.api.Notification;
-import org.apache.pulsar.metadata.api.NotificationType;
-import org.apache.pulsar.metadata.api.Stat;
-import org.apache.pulsar.metadata.api.extended.CreateOption;
-import org.rocksdb.ColumnFamilyDescriptor;
-import org.rocksdb.ColumnFamilyHandle;
-import org.rocksdb.ConfigOptions;
-import org.rocksdb.DBOptions;
-import org.rocksdb.InfoLogLevel;
-import org.rocksdb.Options;
-import org.rocksdb.OptionsUtil;
-import org.rocksdb.ReadOptions;
-import org.rocksdb.RocksDB;
-import org.rocksdb.RocksDBException;
-import org.rocksdb.RocksIterator;
-import org.rocksdb.Transaction;
-import org.rocksdb.TransactionDB;
-import org.rocksdb.TransactionDBOptions;
-import org.rocksdb.WriteOptions;
 
 /**
  *
@@ -223,13 +197,16 @@ public class RocksdbMetadataStore extends AbstractMetadataStore {
             throw new MetadataStoreException("Failed to load RocksDB JNI library", t);
         }
 
-        String dataDir = metadataURL.substring("rocksdb:".length());
+        String dataDir = metadataURL.substring("rocksdb://".length());
         Path dataPath = FileSystems.getDefault().getPath(dataDir);
         try {
             Files.createDirectories(dataPath);
             Set<PosixFilePermission> perms = PosixFilePermissions.fromString("rwxr-x---");
             Files.setPosixFilePermissions(dataPath, perms);
-        } catch (IOException e) {
+        }catch (UnsupportedOperationException e){
+
+        }
+        catch (IOException e) {
             throw new MetadataStoreException("Fail to create RocksDB file directory", e);
         }
 
@@ -383,6 +360,7 @@ public class RocksdbMetadataStore extends AbstractMetadataStore {
 
     @Override
     public CompletableFuture<Optional<GetResult>> storeGet(String path) {
+        log.info("lan.getFromStore.path={},instanceId={}", path, instanceId);
         if (log.isDebugEnabled()) {
             log.debug("getFromStore.path={},instanceId={}", path, instanceId);
         }
@@ -418,6 +396,7 @@ public class RocksdbMetadataStore extends AbstractMetadataStore {
 
     @Override
     protected CompletableFuture<List<String>> getChildrenFromStore(String path) {
+        log.info("lan.getChildrenFromStore.path={},instanceId={}", path, instanceId);
         if (log.isDebugEnabled()) {
             log.debug("getChildrenFromStore.path={},instanceId={}", path, instanceId);
         }
@@ -527,6 +506,7 @@ public class RocksdbMetadataStore extends AbstractMetadataStore {
     @Override
     protected CompletableFuture<Stat> storePut(String path, byte[] data, Optional<Long> expectedVersion,
                                                EnumSet<CreateOption> options) {
+        log.info("lan.storePut.path={},instanceId={}", path, instanceId);
         if (log.isDebugEnabled()) {
             log.debug("storePut.path={},instanceId={}", path, instanceId);
         }
