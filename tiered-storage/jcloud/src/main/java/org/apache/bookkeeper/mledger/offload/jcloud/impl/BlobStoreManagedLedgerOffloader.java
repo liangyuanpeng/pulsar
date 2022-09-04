@@ -558,6 +558,7 @@ public class BlobStoreManagedLedgerOffloader implements LedgerOffloader {
     @Override
     public CompletableFuture<ReadHandle> readOffloaded(long ledgerId, MLDataFormats.OffloadContext ledgerContext,
                                                        Map<String, String> offloadDriverMetadata) {
+        log.info("lan.readOffloaded:{}",ledgerId);
         BlobStoreLocation bsKey = getBlobStoreLocation(offloadDriverMetadata);
         String readBucket = bsKey.getBucket();
         BlobStore readBlobstore = blobStores.get(config.getBlobStoreLocation());
