@@ -192,6 +192,11 @@ public class InMemoryDelayedDeliveryTracker implements DelayedDeliveryTracker, T
         return priorityQueue.size();
     }
 
+    @Override
+    public long getBufferMemoryUsage() {
+        return priorityQueue.bytesCapacity();
+    }
+
     /**
      * Update the scheduled timer task such that:
      * 1. If there are no delayed messages, return and do not schedule a timer task.
@@ -281,5 +286,10 @@ public class InMemoryDelayedDeliveryTracker implements DelayedDeliveryTracker, T
         return messagesHaveFixedDelay
                 && priorityQueue.size() >= DETECT_FIXED_DELAY_LOOKAHEAD_MESSAGES
                 && !hasMessageAvailable();
+    }
+
+    @Override
+    public boolean containsMessage(long ledgerId, long entryId) {
+        return false;
     }
 }

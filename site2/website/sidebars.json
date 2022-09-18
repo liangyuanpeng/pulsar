@@ -7,6 +7,10 @@
     {
       "type": "category",
       "label": "Get Started",
+      "link": {
+        "type": "doc",
+        "id": "getting-started-home"
+      },
       "items": [
         "getting-started-standalone",
         "getting-started-docker",
@@ -22,6 +26,7 @@
         "concepts-architecture-overview",
         "concepts-clients",
         "concepts-replication",
+        "concepts-cluster-level-failover",
         "concepts-multi-tenancy",
         "concepts-authentication",
         "concepts-topic-compaction",
@@ -56,7 +61,7 @@
           "items": [
             "functions-worker-corun",
             "functions-worker-run-separately",
-            "functions-worker-tmp-file-path",
+            "functions-worker-temp-file-path",
             "functions-worker-stateful",
             "functions-worker-for-geo-replication",
             "functions-worker-troubleshooting"
@@ -194,7 +199,13 @@
     {
       "type": "category",
       "label": "Transactions",
-      "items": ["txn-why", "txn-what", "txn-how", "txn-use", "txn-monitor"]
+      "items": [
+        "txn-why",
+        "txn-what",
+        "txn-how",
+        "txn-use",
+        "txn-monitor"
+      ]
     },
     {
       "type": "category",
@@ -232,7 +243,6 @@
         "administration-stats",
         "administration-load-balance",
         "administration-proxy",
-        "administration-isolation",
         "administration-upgrade",
         {
           "type": "category",
@@ -271,7 +281,9 @@
     {
       "type": "category",
       "label": "Performance",
-      "items": ["performance-pulsar-perf"]
+      "items": [
+        "performance-pulsar-perf"
+      ]
     },
     {
       "type": "category",
@@ -290,7 +302,7 @@
     },
     {
       "type": "category",
-      "label": "Admin API",
+      "label": "Admin Interfaces",
       "items": [
         "admin-api-overview",
         "admin-api-clusters",
@@ -307,7 +319,11 @@
     {
       "type": "category",
       "label": "Adaptors",
-      "items": ["adaptors-kafka", "adaptors-spark", "adaptors-storm"]
+      "items": [
+        "adaptors-kafka",
+        "adaptors-spark",
+        "adaptors-storm"
+      ]
     },
     {
       "type": "category",
@@ -340,7 +356,12 @@
         "reference-cli-tools",
         "reference-configuration",
         "reference-metrics",
-        "reference-rest-api-overview"
+        "reference-rest-api-overview",
+        {
+          "type": "link",
+          "href": "/release-notes/",
+          "label": "Release notes"
+        }
       ]
     }
   ]

@@ -215,8 +215,9 @@ public class MetaStoreImpl implements MetaStore {
     public void asyncUpdateCursorInfo(String ledgerName, String cursorName, ManagedCursorInfo info, Stat stat,
             MetaStoreCallback<Void> callback) {
         if (log.isDebugEnabled()) {
-            log.debug("[{}] [{}] Updating cursor info ledgerId={} mark-delete={}:{}", ledgerName, cursorName,
-                    info.getCursorsLedgerId(), info.getMarkDeleteLedgerId(), info.getMarkDeleteEntryId());
+            log.debug("[{}] [{}] Updating cursor info ledgerId={} mark-delete={}:{} lastActive={}",
+                    ledgerName, cursorName, info.getCursorsLedgerId(), info.getMarkDeleteLedgerId(),
+                    info.getMarkDeleteEntryId(), info.getLastActive());
         }
 
         String path = PREFIX + ledgerName + "/" + cursorName;
@@ -235,7 +236,6 @@ public class MetaStoreImpl implements MetaStore {
                 log.debug("[{}] Updating consumer {} on meta-data store with {}", ledgerName, cursorName, info);
             }
         }
-
         store.put(path, content, Optional.of(expectedVersion))
                 .thenAcceptAsync(optStat -> callback.operationComplete(null, optStat), executor
                         .chooseThread(ledgerName))

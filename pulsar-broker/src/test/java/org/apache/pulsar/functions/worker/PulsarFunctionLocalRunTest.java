@@ -27,7 +27,6 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.io.File;
@@ -47,7 +46,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 import lombok.Cleanup;
 import org.apache.pulsar.broker.PulsarService;
 import org.apache.pulsar.broker.ServiceConfiguration;
@@ -449,6 +447,7 @@ public class PulsarFunctionLocalRunTest {
 
         functionConfig.setJar(jarFilePathUrl);
         functionConfig.setParallelism(parallelism);
+        functionConfig.setRetainOrdering(true);
         int metricsPort = FunctionCommon.findAvailablePort();
         @Cleanup
         LocalRunner localRunner = LocalRunner.builder()
@@ -897,6 +896,11 @@ public class PulsarFunctionLocalRunTest {
     }
 
     private void testPulsarSinkLocalRun(String jarFilePathUrl, int parallelism, String className) throws Exception {
+        testPulsarSinkLocalRun(jarFilePathUrl, parallelism, className, null, null);
+    }
+
+    private void testPulsarSinkLocalRun(String jarFilePathUrl, int parallelism, String className,
+                                        String transformFunction, String transformFunctionClassName) throws Exception {
         final String namespacePortion = "io";
         final String replNamespace = tenant + "/" + namespacePortion;
         final String sourceTopic = "persistent://" + replNamespace + "/input";
@@ -922,6 +926,9 @@ public class PulsarFunctionLocalRunTest {
 
         sinkConfig.setArchive(jarFilePathUrl);
         sinkConfig.setParallelism(parallelism);
+        sinkConfig.setTransformFunction(transformFunction);
+        sinkConfig.setTransformFunctionClassName(transformFunctionClassName);
+
         int metricsPort = FunctionCommon.findAvailablePort();
         @Cleanup
         LocalRunner localRunner = LocalRunner.builder()
@@ -934,6 +941,7 @@ public class PulsarFunctionLocalRunTest {
                 .tlsHostNameVerificationEnabled(false)
                 .brokerServiceUrl(pulsar.getBrokerServiceUrlTls())
                 .connectorsDirectory(workerConfig.getConnectorsDirectory())
+                .functionsDirectory(workerConfig.getFunctionsDirectory())
                 .metricsPortStart(metricsPort)
                 .build();
 
@@ -1083,6 +1091,12 @@ public class PulsarFunctionLocalRunTest {
     @Test
     public void testPulsarSinkStatsByteBufferType() throws Throwable {
         runWithNarClassLoader(() -> testPulsarSinkLocalRun(null, 1, StatsNullSink.class.getName()));
+    }
+
+    //@Test(timeOut = 20000, groups = "builtin")
+    @Test(groups = "builtin")
+    public void testPulsarSinkWithFunction() throws Throwable {
+        testPulsarSinkLocalRun(null, 1, StatsNullSink.class.getName(), "builtin://exclamation", "org.apache.pulsar.functions.api.examples.RecordFunction");
     }
     
     public static class TestErrorSink implements Sink<byte[]> {
