@@ -128,9 +128,13 @@ public class RuntimeUtils {
      */
 
     public static List<String> getGoInstanceCmd(InstanceConfig instanceConfig,
+                                                AuthenticationConfig authConfig,
                                                 String originalCodeFileName,
                                                 String pulsarServiceUrl,
                                                 boolean k8sRuntime) throws IOException {
+
+
+
         final List<String> args = new LinkedList<>();
         GoInstanceConfig goInstanceConfig = new GoInstanceConfig();
 
@@ -243,6 +247,28 @@ public class RuntimeUtils {
             goInstanceConfig.setMetricsPort(instanceConfig.getMetricsPort());
         }
 
+        if (authConfig != null) {
+            if (isNotBlank(authConfig.getClientAuthenticationPlugin())
+                    && isNotBlank(authConfig.getClientAuthenticationParameters())) {
+//                args.add("--clientAuthPlugin");
+//                args.add(authConfig.getClientAuthenticationPlugin());
+//                args.add("--clientAuthParams");
+//                args.add(authConfig.getClientAuthenticationParameters());
+                goInstanceConfig.setClientAuthPlugin(authConfig.getClientAuthenticationPlugin());
+                goInstanceConfig.setClientAuthParams(authConfig.getClientAuthenticationParameters());
+            }
+//            args.add("--use_tls");
+//            args.add(Boolean.toString(authConfig.isUseTls()));
+//            args.add("--tls_allow_insecure");
+//            args.add(Boolean.toString(authConfig.isTlsAllowInsecureConnection()));
+//            args.add("--hostname_verification_enabled");
+//            args.add(Boolean.toString(authConfig.isTlsHostnameVerificationEnable()));
+//            if (isNotBlank(authConfig.getTlsTrustCertsFilePath())) {
+//                args.add("--tls_trust_cert_path");
+//                args.add(authConfig.getTlsTrustCertsFilePath());
+//            }
+        }
+
         goInstanceConfig.setKillAfterIdleMs(0);
         goInstanceConfig.setPort(instanceConfig.getPort());
 
@@ -285,7 +311,7 @@ public class RuntimeUtils {
         final List<String> args = new LinkedList<>();
 
         if (instanceConfig.getFunctionDetails().getRuntime() == Function.FunctionDetails.Runtime.GO) {
-            return getGoInstanceCmd(instanceConfig, originalCodeFileName, pulsarServiceUrl, k8sRuntime);
+            return getGoInstanceCmd(instanceConfig,authConfig, originalCodeFileName, pulsarServiceUrl, k8sRuntime);
         }
 
         if (instanceConfig.getFunctionDetails().getRuntime() == Function.FunctionDetails.Runtime.JAVA) {

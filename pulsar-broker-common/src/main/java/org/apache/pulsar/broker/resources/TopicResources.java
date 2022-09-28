@@ -54,7 +54,10 @@ public class TopicResources {
         String path = MANAGED_LEDGER_PATH + "/" + ns + "/persistent";
 
         return store.getChildren(path).thenApply(children ->
-                children.stream().map(c -> TopicName.get(TopicDomain.persistent.toString(), ns, decode(c)).toString())
+                children.stream().map(c -> {
+                            System.out.println("lan.dev.c:"+c);
+                    return TopicName.get(TopicDomain.persistent.toString(), ns, decode(c)).toString();
+                        })
                         .collect(Collectors.toList())
         );
     }

@@ -60,3 +60,11 @@ deadLetterTopic: ""
 expectedHealthCheckInterval: 3
 # metrics config
 metricsPort: 50001
+
+
+#
+clientAuthPlugin: org.apache.pulsar.client.impl.auth.AuthenticationToken
+clientAuthParams: '{"token":"abc"}'
+
+
+/home/lan/repo/git/pulsar/download/pulsar_functions/public/default/logfungo/0/logfungo -instance-conf '{"pulsarServiceURL":"pulsar://localhost:6650","instanceID":0,"funcID":"30d1b583-6f92-4b60-9bb5-66e4dcfaab72","funcVersion":"1a8a7f04-7c00-4072-8edc-d5294aec2a95","maxBufTuples":1024,"port":38179,"clusterName":"standalone","killAfterIdleMs":0,"expectedHealthCheckInterval":0,"tenant":"public","nameSpace":"default","name":"logfungo","className":"","logTopic":"","processingGuarantees":0,"secretsMap":"","userConfig":"{\"hello\":\"world\"}","runtime":3,"autoAck":true,"parallelism":1,"subscriptionType":0,"timeoutMs":0,"subscriptionName":"","cleanupSubscription":true,"subscriptionPosition":0,"sourceSpecsTopic":"test2","sourceSchemaType":"","receiverQueueSize":0,"sinkSpecsTopic":"","sinkSchemaType":"","cpu":1.0,"ram":1073741824,"disk":10737418240,"maxMessageRetries":0,"deadLetterTopic":"","metricsPort":36845,"clientAuthPlugin":"org.apache.pulsar.client.impl.auth.AuthenticationToken","clientAuthParams":"{\"token\":\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9.WkgQ1xTmRikzq-qMYlLD1wWdA0Ur0-1cO6N3mhKt8yI\"}","regexPatternSubscription":false}'

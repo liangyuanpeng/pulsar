@@ -77,6 +77,9 @@ type Conf struct {
 	UserConfig                  string `json:"userConfig" yaml:"userConfig"`
 	//metrics config
 	MetricsPort int `json:"metricsPort" yaml:"metricsPort"`
+
+	ClientAuthPlugin string `json:"ClientAuthPlugin" yaml:"ClientAuthPlugin"`
+	ClientAuthParams string `json:"ClientAuthParams" yaml:"ClientAuthParams"`
 }
 
 var (
@@ -121,6 +124,8 @@ func (c *Conf) GetConf() *Conf {
 			return nil
 		}
 	}
+	log.Info(c.UserConfig)
+	log.Info(c.ClientAuthParams)
 
 	return c
 }

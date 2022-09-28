@@ -102,6 +102,7 @@ public class TimeTriggerPolicy<T> implements TriggerPolicy<T, Void> {
         return new Runnable() {
             @Override
             public void run() {
+                log.info("lan.function.window.time.trigger:{}",context.getFunctionName());
                 // initialize the thread context
                 ThreadContext.put("function", WindowUtils.getFullyQualifiedName(
                         context.getTenant(), context.getNamespace(), context.getFunctionName()));

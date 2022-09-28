@@ -58,7 +58,7 @@
       </activation>
       <modules>
         <module>pulsar</module>
-        <module>pulsar-all</module>
+        <!-- <module>pulsar-all</module> -->
       </modules>
     </profile>
   </profiles>

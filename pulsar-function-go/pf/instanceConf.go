@@ -41,6 +41,9 @@ type instanceConf struct {
 	killAfterIdle               time.Duration
 	expectedHealthCheckInterval int32
 	metricsPort                 int
+
+	clientAuthPlugin string
+	clientAuthParams string
 }
 
 func newInstanceConfWithConf(cfg *conf.Conf) *instanceConf {
@@ -96,6 +99,8 @@ func newInstanceConfWithConf(cfg *conf.Conf) *instanceConf {
 			},
 			UserConfig: cfg.UserConfig,
 		},
+		clientAuthPlugin: cfg.ClientAuthPlugin,
+		clientAuthParams: cfg.ClientAuthParams,
 	}
 
 	if instanceConf.funcDetails.ProcessingGuarantees == pb.ProcessingGuarantees_EFFECTIVELY_ONCE {

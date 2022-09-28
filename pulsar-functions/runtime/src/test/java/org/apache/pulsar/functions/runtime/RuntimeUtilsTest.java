@@ -116,7 +116,7 @@ public class RuntimeUtilsTest {
 
         instanceConfig.setFunctionDetails(functionDetails);
 
-        List<String> commands = RuntimeUtils.getGoInstanceCmd(instanceConfig, "config", "pulsar://localhost:6650", k8sRuntime);
+        List<String> commands = RuntimeUtils.getGoInstanceCmd(instanceConfig, null,"config", "pulsar://localhost:6650", k8sRuntime);
         if (k8sRuntime) {
             goInstanceConfig = new ObjectMapper().readValue(commands.get(2).replaceAll("^\'|\'$", ""), HashMap.class);
         } else {

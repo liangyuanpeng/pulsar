@@ -325,6 +325,11 @@ public class TopicName implements ServiceUnitId {
         if (isV2()) {
             return String.format("%s/%s/%s/%s", tenant, namespacePortion, domain, getEncodedLocalName());
         } else {
+            System.out.println("tenant:"+tenant);
+            System.out.println("cluster:"+cluster);
+            System.out.println("namespacePortion:"+namespacePortion);
+            System.out.println("domain:"+domain);
+            System.out.println("getEncodedLocalName():"+getEncodedLocalName());
             return String.format("%s/%s/%s/%s/%s", tenant, cluster, namespacePortion, domain, getEncodedLocalName());
         }
     }

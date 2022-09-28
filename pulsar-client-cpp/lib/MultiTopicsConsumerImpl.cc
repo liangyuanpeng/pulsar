@@ -183,7 +183,8 @@ void MultiTopicsConsumerImpl::subscribeTopicPartitions(int numPartitions, TopicN
     if (numPartitions == 0) {
         // We don't have to add partition-n suffix
         consumer = std::make_shared<ConsumerImpl>(client_, topicName->toString(), subscriptionName_, config,
-                                                  internalListenerExecutor, true, NonPartitioned);
+                                                  topicName->isPersistent(), internalListenerExecutor, true,
+                                                  NonPartitioned);
         consumer->getConsumerCreatedFuture().addListener(std::bind(
             &MultiTopicsConsumerImpl::handleSingleConsumerCreated, shared_from_this(), std::placeholders::_1,
             std::placeholders::_2, partitionsNeedCreate, topicSubResultPromise));
@@ -195,7 +196,8 @@ void MultiTopicsConsumerImpl::subscribeTopicPartitions(int numPartitions, TopicN
         for (int i = 0; i < numPartitions; i++) {
             std::string topicPartitionName = topicName->getTopicPartitionName(i);
             consumer = std::make_shared<ConsumerImpl>(client_, topicPartitionName, subscriptionName_, config,
-                                                      internalListenerExecutor, true, Partitioned);
+                                                      topicName->isPersistent(), internalListenerExecutor,
+                                                      true, Partitioned);
             consumer->getConsumerCreatedFuture().addListener(std::bind(
                 &MultiTopicsConsumerImpl::handleSingleConsumerCreated, shared_from_this(),
                 std::placeholders::_1, std::placeholders::_2, partitionsNeedCreate, topicSubResultPromise));
@@ -748,11 +750,12 @@ uint64_t MultiTopicsConsumerImpl::getNumberOfConnectedConsumer() {
 }
 void MultiTopicsConsumerImpl::runPartitionUpdateTask() {
     partitionsUpdateTimer_->expires_from_now(partitionsUpdateInterval_);
-    auto self = shared_from_this();
-    partitionsUpdateTimer_->async_wait([self](const boost::system::error_code& ec) {
+    std::weak_ptr<MultiTopicsConsumerImpl> weakSelf{shared_from_this()};
+    partitionsUpdateTimer_->async_wait([weakSelf](const boost::system::error_code& ec) {
         // If two requests call runPartitionUpdateTask at the same time, the timer will fail, and it
         // cannot continue at this time, and the request needs to be ignored.
-        if (!ec) {
+        auto self = weakSelf.lock();
+        if (self && !ec) {
             self->topicPartitionUpdate();
         }
     });
@@ -818,7 +821,8 @@ void MultiTopicsConsumerImpl::subscribeSingleNewConsumer(
     std::string topicPartitionName = topicName->getTopicPartitionName(partitionIndex);
 
     auto consumer = std::make_shared<ConsumerImpl>(client_, topicPartitionName, subscriptionName_, config,
-                                                   internalListenerExecutor, true, Partitioned);
+                                                   topicName->isPersistent(), internalListenerExecutor, true,
+                                                   Partitioned);
     consumer->getConsumerCreatedFuture().addListener(
         std::bind(&MultiTopicsConsumerImpl::handleSingleConsumerCreated, shared_from_this(),
                   std::placeholders::_1, std::placeholders::_2, partitionsNeedCreate, topicSubResultPromise));

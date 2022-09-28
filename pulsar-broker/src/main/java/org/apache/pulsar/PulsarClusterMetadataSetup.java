@@ -35,6 +35,7 @@ import org.apache.pulsar.bookie.rackawareness.BookieRackAffinityMapping;
 import org.apache.pulsar.broker.resources.NamespaceResources;
 import org.apache.pulsar.broker.resources.PulsarResources;
 import org.apache.pulsar.broker.resources.TenantResources;
+import org.apache.pulsar.client.api.ProxyProtocol;
 import org.apache.pulsar.common.conf.InternalConfigurationData;
 import org.apache.pulsar.common.naming.NamespaceName;
 import org.apache.pulsar.common.naming.SystemTopicNames;
@@ -44,6 +45,7 @@ import org.apache.pulsar.common.policies.data.ClusterData;
 import org.apache.pulsar.common.policies.data.Policies;
 import org.apache.pulsar.common.policies.data.TenantInfoImpl;
 import org.apache.pulsar.common.util.CmdGenerateDocs;
+import org.apache.pulsar.common.util.ShutdownUtil;
 import org.apache.pulsar.functions.worker.WorkerUtils;
 import org.apache.pulsar.metadata.api.MetadataStore;
 import org.apache.pulsar.metadata.api.MetadataStoreConfig;
@@ -137,6 +139,16 @@ public class PulsarClusterMetadataSetup {
             description = "The metadata service URI of the existing BookKeeper cluster that you want to use",
             hidden = true)
         private String bookieMetadataServiceUri;
+
+        @Parameter(names = { "-pp",
+                "--proxy-protocol" },
+                description = "Proxy protocol to select type of routing at proxy. Possible Values: [SNI]",
+                required = false)
+        private ProxyProtocol clusterProxyProtocol;
+
+        @Parameter(names = { "-pu",
+                "--proxy-url" }, description = "Proxy-server URL to which to connect.", required = false)
+        private String clusterProxyUrl;
 
         @Parameter(names = { "-h", "--help" }, description = "Show this help message")
         private boolean help = false;
@@ -238,7 +250,7 @@ public class PulsarClusterMetadataSetup {
             System.err.println("Unexpected error occured.");
             e.printStackTrace(System.err);
             System.err.println("Terminating JVM...");
-            Runtime.getRuntime().halt(1);
+            ShutdownUtil.triggerImmediateForcefulShutdown();
         }
     }
 
@@ -247,8 +259,8 @@ public class PulsarClusterMetadataSetup {
                 arguments.metadataStoreUrl, arguments.configurationMetadataStore);
 
         MetadataStoreExtended localStore =
-                initMetadataStore(arguments.metadataStoreUrl, arguments.zkSessionTimeoutMillis);
-        MetadataStoreExtended configStore = initMetadataStore(arguments.configurationMetadataStore,
+                initLocalMetadataStore(arguments.metadataStoreUrl, arguments.zkSessionTimeoutMillis);
+        MetadataStoreExtended configStore = initConfigMetadataStore(arguments.configurationMetadataStore,
                 arguments.zkSessionTimeoutMillis);
 
         final String metadataStoreUrlNoIdentifer = MetadataStoreFactoryImpl
@@ -298,6 +310,8 @@ public class PulsarClusterMetadataSetup {
                 .serviceUrlTls(arguments.clusterWebServiceUrlTls)
                 .brokerServiceUrl(arguments.clusterBrokerServiceUrl)
                 .brokerServiceUrlTls(arguments.clusterBrokerServiceUrlTls)
+                .proxyServiceUrl(arguments.clusterProxyUrl)
+                .proxyProtocol(arguments.clusterProxyProtocol)
                 .build();
         if (!resources.getClusterResources().clusterExists(arguments.cluster)) {
             resources.getClusterResources().createCluster(arguments.cluster, clusterData);
@@ -388,9 +402,22 @@ public class PulsarClusterMetadataSetup {
         }
     }
 
-    public static MetadataStoreExtended initMetadataStore(String connection, int sessionTimeout) throws Exception {
+    public static MetadataStoreExtended initLocalMetadataStore(String connection, int sessionTimeout) throws Exception {
         MetadataStoreExtended store = MetadataStoreExtended.create(connection, MetadataStoreConfig.builder()
                 .sessionTimeoutMillis(sessionTimeout)
+                .metadataStoreName(MetadataStoreConfig.METADATA_STORE)
+                .build());
+        if (store instanceof MetadataStoreLifecycle) {
+            ((MetadataStoreLifecycle) store).initializeCluster().get();
+        }
+        return store;
+    }
+
+    public static MetadataStoreExtended initConfigMetadataStore(String connection, int sessionTimeout)
+            throws Exception {
+        MetadataStoreExtended store = MetadataStoreExtended.create(connection, MetadataStoreConfig.builder()
+                .sessionTimeoutMillis(sessionTimeout)
+                .metadataStoreName(MetadataStoreConfig.CONFIGURATION_METADATA_STORE)
                 .build());
         if (store instanceof MetadataStoreLifecycle) {
             ((MetadataStoreLifecycle) store).initializeCluster().get();

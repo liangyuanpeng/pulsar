@@ -21,6 +21,7 @@
 FROM busybox as pulsar
 
 ARG PULSAR_TARBALL
+# 21:28
 
 ADD ${PULSAR_TARBALL} /
 RUN mv /apache-pulsar-* /pulsar
@@ -30,9 +31,9 @@ COPY scripts/apply-config-from-env.py /pulsar/bin
 COPY scripts/apply-config-from-env-with-prefix.py /pulsar/bin
 COPY scripts/gen-yml-from-env.py /pulsar/bin
 COPY scripts/generate-zookeeper-config.sh /pulsar/bin
-COPY scripts/pulsar-zookeeper-ruok.sh /pulsar/bin
+#COPY scripts/pulsar-zookeeper-ruok.sh /pulsar/bin
 COPY scripts/watch-znode.py /pulsar/bin
-COPY scripts/install-pulsar-client.sh /pulsar/bin
+#COPY scripts/install-pulsar-client.sh /pulsar/bin
 
 # The final image needs to give the root group sufficient permission for Pulsar components
 # to write to specific directories within /pulsar
@@ -59,6 +60,19 @@ RUN sed -i "s|http://archive\.ubuntu\.com/ubuntu/|${UBUNTU_MIRROR:-mirror://mirr
      && echo 'Acquire::http::Timeout "30";\nAcquire::ftp::Timeout "30";\nAcquire::Retries "3";' > /etc/apt/apt.conf.d/99timeout_and_retries \
      && apt-get update \
      && apt-get -y dist-upgrade \
+<<<<<<< HEAD
+<<<<<<< HEAD
+     && apt-get -y install --no-install-recommends openjdk-11-jdk-headless \
+#                    netcat dnsutils less procps iputils-ping \
+#                 python3 python3-yaml python3-kazoo python3-pip \
+#                 curl ca-certificates \
+=======
+     && apt-get -y install --no-install-recommends openjdk-17-jdk-headless netcat dnsutils less procps iputils-ping \
+                 python3 python3-kazoo python3-pip \
+                 curl ca-certificates \
+>>>>>>> e6b12c64b043903eb5ff2dc5186fe8030f157cfc
+     && apt-get -y --purge autoremove \
+=======
      && apt-get -y install --no-install-recommends netcat dnsutils less procps iputils-ping \
                  python3 python3-kazoo python3-pip \
                  curl ca-certificates wget apt-transport-https
@@ -69,15 +83,22 @@ RUN mkdir -p /etc/apt/keyrings \
      && echo "deb [signed-by=/etc/apt/keyrings/adoptium.asc] https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list \
      && apt-get update \
      && apt-get -y dist-upgrade \
-     && apt-get -y install temurin-17-jdk
+     && apt-get -y install temurin-17-jdk \
+     && export ARCH=$(uname -m | sed -r 's/aarch64/arm64/g' |  awk '!/arm64/{$0="amd64"}1') \
+     && echo networkaddress.cache.ttl=1 >> /usr/lib/jvm/temurin-17-jdk-$ARCH/conf/security/java.security \
 
 # Cleanup apt
 RUN apt-get -y --purge autoremove \
+>>>>>>> origin/master
      && apt-get autoclean \
      && apt-get clean \
      && rm -rf /var/lib/apt/lists/*
 
+<<<<<<< HEAD
+#RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 10
+=======
 RUN pip3 install pyyaml==5.4.1
+>>>>>>> e6b12c64b043903eb5ff2dc5186fe8030f157cfc
 
 # Pulsar currently writes to the below directories, assuming the default configuration.
 # Note that number 4 is the reason that pulsar components need write access to the /pulsar directory.
@@ -87,18 +108,26 @@ RUN pip3 install pyyaml==5.4.1
 # 4. /pulsar - hadoop writes to this directory
 RUN mkdir /pulsar && chmod g+w /pulsar
 
-ENV JAVA_HOME /usr/lib/jvm/temurin-17-jdk-amd64
-RUN echo networkaddress.cache.ttl=1 >> /usr/lib/jvm/temurin-17-jdk-amd64/conf/security/java.security
+<<<<<<< HEAD
+<<<<<<< HEAD
+ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-amd64
+RUN echo networkaddress.cache.ttl=1 >> /usr/lib/jvm/java-11-openjdk-amd64/conf/security/java.security
+#ADD target/python-client/ /pulsar/pulsar-client
+=======
+ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk-amd64
+RUN echo networkaddress.cache.ttl=1 >> /usr/lib/jvm/java-17-openjdk-amd64/conf/security/java.security
+=======
+>>>>>>> origin/master
 ADD target/python-client/ /pulsar/pulsar-client
+>>>>>>> e6b12c64b043903eb5ff2dc5186fe8030f157cfc
 
 ENV PULSAR_ROOT_LOGGER=INFO,CONSOLE
-
 
 COPY --from=pulsar /pulsar /pulsar
 WORKDIR /pulsar
 
 # This script is intentionally run as the root user to make the dependencies available for all UIDs.
-RUN /pulsar/bin/install-pulsar-client.sh
+#RUN /pulsar/bin/install-pulsar-client.sh
 
 # The UID must be non-zero. Otherwise, it is arbitrary. No logic should rely on its specific value.
 USER 10000
