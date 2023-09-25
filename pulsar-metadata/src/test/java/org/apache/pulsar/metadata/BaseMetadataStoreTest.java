@@ -91,12 +91,13 @@ public abstract class BaseMetadataStoreTest extends TestRetrySupport {
     }
 
     private synchronized String getEtcdClusterConnectString() {
-        if (etcdCluster == null) {
-            etcdCluster = EtcdClusterExtension.builder().withClusterName("test").withNodes(1).withSsl(false).build()
-                    .cluster();
-            etcdCluster.start();
-        }
-        return etcdCluster.clientEndpoints().stream().map(URI::toString).collect(Collectors.joining(","));
+//        if (etcdCluster == null) {
+//            etcdCluster = EtcdClusterExtension.builder().withClusterName("test").withNodes(1).withSsl(false).build()
+//                    .cluster();
+//            etcdCluster.start();
+//        }
+//        return etcdCluster.clientEndpoints().stream().map(URI::toString).collect(Collectors.joining(","));
+        return "http://localhost:2379";
     }
 
     public static Supplier<String> stringSupplier(Supplier<String> supplier) {
