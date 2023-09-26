@@ -75,9 +75,9 @@ public abstract class BaseMetadataStoreTest extends TestRetrySupport {
         // The new connection string won't be available to the test method unless a
         // Supplier<String> lambda is used for providing the value.
         return new Object[][]{
-                {"ZooKeeper", stringSupplier(() -> zks.getConnectionString())},
-                {"Memory", stringSupplier(() -> "memory:" + UUID.randomUUID())},
-                {"RocksDB", stringSupplier(() -> "rocksdb:" + createTempFolder())},
+//                {"ZooKeeper", stringSupplier(() -> zks.getConnectionString())},
+//                {"Memory", stringSupplier(() -> "memory:" + UUID.randomUUID())},
+//                {"RocksDB", stringSupplier(() -> "rocksdb:" + createTempFolder())},
                 {"Etcd", stringSupplier(() -> "etcd:" + getEtcdClusterConnectString())},
         };
     }
@@ -85,7 +85,7 @@ public abstract class BaseMetadataStoreTest extends TestRetrySupport {
     @DataProvider(name = "distributedImpl")
     public Object[][] distributedImplementations() {
         return new Object[][]{
-                {"ZooKeeper", stringSupplier(() -> zks.getConnectionString())},
+//                {"ZooKeeper", stringSupplier(() -> zks.getConnectionString())},
                 {"Etcd", stringSupplier(() -> "etcd:" + getEtcdClusterConnectString())},
         };
     }

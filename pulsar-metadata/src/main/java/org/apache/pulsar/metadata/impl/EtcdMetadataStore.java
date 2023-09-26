@@ -327,6 +327,7 @@ public class EtcdMetadataStore extends AbstractBatchedMetadataStore {
     private void handleBatchOperationResult(TxnResponse txnResponse,
                                             List<MetadataOp> ops) {
         executor.execute(() -> {
+            log.info("txnResponse:{}",txnResponse.getPutResponses());
             if (!txnResponse.isSucceeded()) {
                 if (ops.size() > 1) {
                     // Retry individually
