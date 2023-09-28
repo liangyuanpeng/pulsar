@@ -338,6 +338,7 @@ public class EtcdMetadataStore extends AbstractBatchedMetadataStore {
                     // Retry individually
                     ops.forEach(o -> batchOperation(Collections.singletonList(o)));
                 } else {
+                    log.info("txnResponse.failed:{}|{}|{}",ops,txnResponse.isSucceeded(),txnResponse.getPutResponses());
                     ops.get(0).getFuture()
                             .completeExceptionally(new MetadataStoreException.BadVersionException("Bad version"));
                 }

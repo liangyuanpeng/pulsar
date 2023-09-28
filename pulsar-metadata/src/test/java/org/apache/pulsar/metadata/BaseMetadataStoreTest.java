@@ -94,8 +94,8 @@ public abstract class BaseMetadataStoreTest extends TestRetrySupport {
 
     private synchronized String getEtcdClusterConnectString() {
 //        return "http://192.168.3.87:2379";
-//        return "http://192.168.3.231:12379";
-        return "http://192.168.3.231:32379";
+        return "http://192.168.3.231:12379";
+//        return "http://192.168.3.231:32379";
 //        String etcdUrl = System.getProperty("pulsar.metadatastore.etcd.url");
 //        if(StringUtils.isNotBlank(etcdUrl)){
 //            return etcdUrl;
