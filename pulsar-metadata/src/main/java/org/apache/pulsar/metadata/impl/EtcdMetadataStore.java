@@ -213,16 +213,20 @@ public class EtcdMetadataStore extends AbstractBatchedMetadataStore {
     @Override
     protected void batchOperation(List<MetadataOp> ops) {
         try {
+            log.info("ops:{}",ops.size());
             Txn txn = kv.txn();
 
             // First, set all the conditions
             ops.forEach(op -> {
+                log.info("op.getType():{}",op.getType());
                 switch (op.getType()) {
                     case PUT: {
                         OpPut put = op.asPut();
+                        log.info("putpath:{}",put.getPath());
                         ByteSequence key = ByteSequence.from(put.getPath(), StandardCharsets.UTF_8);
                         if (put.getOptExpectedVersion().isPresent()) {
                             long expectedVersion = put.getOptExpectedVersion().get();
+                            log.info("expectedVersion:{}|{}",put.getPath(),expectedVersion);
                             if (expectedVersion == -1L) {
                                 // Check that key does not exist
                                 txn.If(new Cmp(key, Cmp.Op.EQUAL, CmpTarget.createRevision(0)));
@@ -327,6 +331,8 @@ public class EtcdMetadataStore extends AbstractBatchedMetadataStore {
     private void handleBatchOperationResult(TxnResponse txnResponse,
                                             List<MetadataOp> ops) {
         executor.execute(() -> {
+            log.info("ops:{}",ops);
+            log.info("txnResponse:{}|{}",txnResponse.isSucceeded(),txnResponse.getPutResponses());
             if (!txnResponse.isSucceeded()) {
                 if (ops.size() > 1) {
                     // Retry individually

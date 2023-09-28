@@ -136,6 +136,7 @@ public class MetadataStoreBatchingTest extends BaseMetadataStoreTest {
 
         List<CompletableFuture<Stat>> putFutures = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
+            log.info("key1:{}",key1);
             CompletableFuture<Stat> f =
                     store.put(key1 + "/x", new byte[0], Optional.of(-1L), EnumSet.of(CreateOption.Sequential));
             putFutures.add(f);
