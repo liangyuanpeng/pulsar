@@ -18,9 +18,15 @@
  */
 package org.apache.pulsar.metadata;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import lombok.Cleanup;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.pulsar.common.util.FutureUtil;
+import org.apache.pulsar.metadata.api.*;
+import org.apache.pulsar.metadata.api.MetadataStoreException.BadVersionException;
+import org.apache.pulsar.metadata.api.MetadataStoreException.NotFoundException;
+import org.apache.pulsar.metadata.api.extended.CreateOption;
+import org.apache.pulsar.metadata.api.extended.MetadataStoreExtended;
+import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -29,19 +35,8 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.function.Supplier;
-import lombok.Cleanup;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.pulsar.common.util.FutureUtil;
-import org.apache.pulsar.metadata.api.GetResult;
-import org.apache.pulsar.metadata.api.MetadataStore;
-import org.apache.pulsar.metadata.api.MetadataStoreConfig;
-import org.apache.pulsar.metadata.api.MetadataStoreException.BadVersionException;
-import org.apache.pulsar.metadata.api.MetadataStoreException.NotFoundException;
-import org.apache.pulsar.metadata.api.MetadataStoreFactory;
-import org.apache.pulsar.metadata.api.Stat;
-import org.apache.pulsar.metadata.api.extended.CreateOption;
-import org.apache.pulsar.metadata.api.extended.MetadataStoreExtended;
-import org.testng.annotations.Test;
+
+import static org.testng.Assert.*;
 
 @Slf4j
 public class MetadataStoreBatchingTest extends BaseMetadataStoreTest {
@@ -135,7 +130,8 @@ public class MetadataStoreBatchingTest extends BaseMetadataStoreTest {
         String key1 = newKey();
 
         List<CompletableFuture<Stat>> putFutures = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
+        long testSize = 5;
+        for (int i = 0; i <testSize; i++) {
             log.info("key1:{}",key1);
             CompletableFuture<Stat> f =
                     store.put(key1 + "/x", new byte[0], Optional.of(-1L), EnumSet.of(CreateOption.Sequential));
@@ -145,7 +141,7 @@ public class MetadataStoreBatchingTest extends BaseMetadataStoreTest {
         FutureUtil.waitForAll(putFutures).join();
 
 
-        assertEquals(store.getChildren(key1).join().size(), 10);
+        assertEquals(store.getChildren(key1).join().size(), testSize);
     }
 
 

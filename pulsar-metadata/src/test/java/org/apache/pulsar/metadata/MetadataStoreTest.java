@@ -18,44 +18,26 @@
  */
 package org.apache.pulsar.metadata;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pulsar.common.util.FutureUtil;
-import org.apache.pulsar.metadata.api.GetResult;
-import org.apache.pulsar.metadata.api.MetadataStore;
-import org.apache.pulsar.metadata.api.MetadataStoreConfig;
-import org.apache.pulsar.metadata.api.MetadataStoreException;
+import org.apache.pulsar.metadata.api.*;
 import org.apache.pulsar.metadata.api.MetadataStoreException.BadVersionException;
 import org.apache.pulsar.metadata.api.MetadataStoreException.NotFoundException;
-import org.apache.pulsar.metadata.api.MetadataStoreFactory;
-import org.apache.pulsar.metadata.api.Notification;
-import org.apache.pulsar.metadata.api.NotificationType;
-import org.apache.pulsar.metadata.api.Stat;
 import org.apache.pulsar.metadata.impl.ZKMetadataStore;
 import org.assertj.core.util.Lists;
 import org.awaitility.Awaitility;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
+
+import static org.testng.Assert.*;
 
 @Slf4j
 public class MetadataStoreTest extends BaseMetadataStoreTest {
@@ -584,9 +566,11 @@ public class MetadataStoreTest extends BaseMetadataStoreTest {
         store.put(k, new byte[0], Optional.of(-1L)).join();
         CompletableFuture<Void> f1 =
                 CompletableFuture.runAsync(() -> store.delete(k, Optional.empty()).join());
+//        String k2 = newKey();
         CompletableFuture<Void> f2 =
                 CompletableFuture.runAsync(() -> store.delete(k, Optional.empty()).join());
         Awaitility.await().until(() -> f1.isDone() && f2.isDone());
+        log.info("test:{}|{}",f1.isCompletedExceptionally(),f2.isCompletedExceptionally());
         assertTrue(f1.isCompletedExceptionally() && !f2.isCompletedExceptionally() ||
                 ! f1.isCompletedExceptionally() && f2.isCompletedExceptionally());
     }

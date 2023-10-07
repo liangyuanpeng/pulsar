@@ -20,12 +20,7 @@ package org.apache.pulsar.metadata.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import io.etcd.jetcd.ByteSequence;
-import io.etcd.jetcd.Client;
-import io.etcd.jetcd.ClientBuilder;
-import io.etcd.jetcd.KV;
-import io.etcd.jetcd.KeyValue;
-import io.etcd.jetcd.Txn;
+import io.etcd.jetcd.*;
 import io.etcd.jetcd.kv.DeleteResponse;
 import io.etcd.jetcd.kv.GetResponse;
 import io.etcd.jetcd.kv.PutResponse;
@@ -47,46 +42,31 @@ import io.grpc.netty.GrpcSslContexts;
 import io.grpc.stub.StreamObserver;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslProvider;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.pulsar.metadata.api.GetResult;
-import org.apache.pulsar.metadata.api.MetadataStore;
-import org.apache.pulsar.metadata.api.MetadataStoreConfig;
-import org.apache.pulsar.metadata.api.MetadataStoreException;
-import org.apache.pulsar.metadata.api.MetadataStoreProvider;
-import org.apache.pulsar.metadata.api.Notification;
-import org.apache.pulsar.metadata.api.NotificationType;
-import org.apache.pulsar.metadata.api.Stat;
+import org.apache.pulsar.metadata.api.*;
 import org.apache.pulsar.metadata.api.extended.CreateOption;
 import org.apache.pulsar.metadata.api.extended.SessionEvent;
-import org.apache.pulsar.metadata.impl.batching.AbstractBatchedMetadataStore;
-import org.apache.pulsar.metadata.impl.batching.MetadataOp;
-import org.apache.pulsar.metadata.impl.batching.OpDelete;
-import org.apache.pulsar.metadata.impl.batching.OpGet;
-import org.apache.pulsar.metadata.impl.batching.OpGetChildren;
-import org.apache.pulsar.metadata.impl.batching.OpPut;
+import org.apache.pulsar.metadata.impl.batching.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import static org.apache.pulsar.metadata.impl.batching.MetadataOp.Type.PUT;
 
 @Slf4j
 public class EtcdMetadataStore extends AbstractBatchedMetadataStore {
@@ -213,8 +193,17 @@ public class EtcdMetadataStore extends AbstractBatchedMetadataStore {
     @Override
     protected void batchOperation(List<MetadataOp> ops) {
         try {
+            if(ops.size()==1){
+                log.info("debug in");
+            }
             log.info("ops:{}",ops.size());
             Txn txn = kv.txn();
+
+            for (MetadataOp op : ops) {
+                if (op.getType() == PUT) {
+                    log.info("foreatch.op:{}", op.asPut().getPath());
+                }
+            }
 
             // First, set all the conditions
             ops.forEach(op -> {
@@ -331,14 +320,15 @@ public class EtcdMetadataStore extends AbstractBatchedMetadataStore {
     private void handleBatchOperationResult(TxnResponse txnResponse,
                                             List<MetadataOp> ops) {
         executor.execute(() -> {
-            log.info("ops:{}",ops);
-            log.info("txnResponse:{}|{}",txnResponse.isSucceeded(),txnResponse.getPutResponses());
+//            log.info("ops:{}|{}",ops.size(),ops);
+            log.info("txnResponse:{}|{}|\n{}|\n{}\n===========================",ops.size(),txnResponse.isSucceeded(),ops,txnResponse.getPutResponses());
             if (!txnResponse.isSucceeded()) {
                 if (ops.size() > 1) {
                     // Retry individually
+                    log.info("===============================handleBatchOperationResult");
                     ops.forEach(o -> batchOperation(Collections.singletonList(o)));
                 } else {
-                    log.info("txnResponse.failed:{}|{}|{}",ops,txnResponse.isSucceeded(),txnResponse.getPutResponses());
+                    log.info("txnResponse.failed:{}|{}|\n{}|\n{}\n===========================",ops.size(),txnResponse.isSucceeded(),ops,txnResponse.getPutResponses());
                     ops.get(0).getFuture()
                             .completeExceptionally(new MetadataStoreException.BadVersionException("Bad version"));
                 }
@@ -386,7 +376,9 @@ public class EtcdMetadataStore extends AbstractBatchedMetadataStore {
                     }
                     case DELETE: {
                         OpDelete del = op.asDelete();
+                        log.info("txnResponse.deleteResponse:{}",txnResponse.getDeleteResponses());
                         DeleteResponse dr = txnResponse.getDeleteResponses().get(deletedIdx++);
+                        
                         if (dr.getDeleted() == 0) {
                             del.getFuture().completeExceptionally(new MetadataStoreException.NotFoundException());
                         } else {

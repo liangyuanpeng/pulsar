@@ -18,24 +18,20 @@
  */
 package org.apache.pulsar.metadata;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
 import io.etcd.jetcd.launcher.EtcdCluster;
-import io.etcd.jetcd.test.EtcdClusterExtension;
-import java.io.File;
-import java.net.URI;
-import java.util.UUID;
-import java.util.concurrent.CompletionException;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
 import org.apache.pulsar.tests.TestRetrySupport;
 import org.assertj.core.util.Files;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
+
+import java.io.File;
+import java.util.concurrent.CompletionException;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 public abstract class BaseMetadataStoreTest extends TestRetrySupport {
     protected TestZKServer zks;
@@ -45,7 +41,7 @@ public abstract class BaseMetadataStoreTest extends TestRetrySupport {
     @Override
     public void setup() throws Exception {
         incrementSetupNumber();
-        zks = new TestZKServer();
+//        zks = new TestZKServer();
     }
 
     @AfterClass(alwaysRun = true)
@@ -94,7 +90,9 @@ public abstract class BaseMetadataStoreTest extends TestRetrySupport {
 
     private synchronized String getEtcdClusterConnectString() {
 //        return "http://192.168.3.87:2379";
-        return "http://192.168.3.231:12379";
+//        return "http://192.168.3.231:12379";
+//        return "http://192.168.31.13:2379";
+        return "http://192.168.31.13:12379";
 //        return "http://192.168.3.231:32379";
 //        String etcdUrl = System.getProperty("pulsar.metadatastore.etcd.url");
 //        if(StringUtils.isNotBlank(etcdUrl)){
